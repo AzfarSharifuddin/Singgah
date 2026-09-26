@@ -199,7 +199,10 @@ export type Database = {
         Relationships: [];
       };
     };
-    Functions: { [_ in never]: never };
+    Functions: {
+      has_reviewed_vendor: { Args: { p_vendor_id: string }; Returns: boolean };
+      submit_customer_review: { Args: { p_payload: string; p_signature: string }; Returns: string };
+    };
     Enums: { [_ in never]: never };
     CompositeTypes: { [_ in never]: never };
   };

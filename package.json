@@ -20,7 +20,11 @@
     "test:vendor-format": "node --test scripts/test-vendor-format.ts",
     "test:vendor-browser": "node scripts/test-vendor-browser.mjs",
     "test:discovery": "node --test scripts/test-discovery.ts",
-    "test:discovery-browser": "node scripts/test-discovery-browser.mjs"
+    "test:discovery-browser": "node scripts/test-discovery-browser.mjs",
+    "reviews:configure": "node scripts/configure-review-key.mjs",
+    "test:reviews": "node --conditions=react-server --test scripts/test-review-validation.ts scripts/test-review-protection.ts",
+    "test:reviews-db": "node scripts/test-review-database.mjs",
+    "test:reviews-browser": "node scripts/test-review-browser.mjs"
   },
   "dependencies": {
     "@supabase/supabase-js": "^2.117.2",

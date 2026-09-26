@@ -46,9 +46,7 @@ characters). The runner requires verified TLS and targets only Singgah Dev. A
 publishable key cannot apply SQL migrations. No local PostgreSQL, Docker, CLI
 login, or local Supabase stack is required.
 
-Supabase browser/server factories currently perform public reads only. Auth
-cookies, sign-in, anonymous customer creation, owner writes and admin flows are
-intentionally deferred.
+The server client performs stateless public reads. The browser client persists anonymous customer sessions for review submission. Vendor ownership and admin flows remain deferred.
 
 ## Database workflow
 
@@ -178,9 +176,7 @@ assets and Storage read policies exist, honest placeholders are shown. Failed
 image loads also fall back. No bucket, policy, upload UI or image assets were added.
 
 The location card links to Google Maps only when both coordinates exist; it needs
-no API key and has no embedded map. The review CTA is disabled and clearly marked
-coming soon. Discovery, auth/dashboard, review submission and NFC tracking remain
-out of scope.
+no API key and has no embedded map. Sprint 4 enables the review CTA; vendor dashboards and NFC tracking remain out of scope.
 
 ### Verification
 
@@ -276,7 +272,13 @@ to verify multi-page ordering, exact count, final partial page, and no duplicate
 or omissions. URL/window unit tests verify preserved filter state and 12-row
 production offsets. No fixtures, schema, dependencies or credentials were changed.
 
-Sprint 4 requires approval before review submission or other feature work begins.
+## Customer reviews (Sprint 4)
+
+The profile CTA opens `/vendor/[slug]/review`. Customers submit overall stars, optional text and optional product stars without a signup screen. Anonymous identity is created only when submitting and reused afterward. The server validates Turnstile and invokes an atomic, identity-bound database transaction. Valid submissions publish immediately as unverified; direct table writes remain closed.
+
+See [review setup, security and testing](docs/review-submission.md) for required Supabase anonymous-auth configuration, local Turnstile test mode, production keys, migration/key provisioning, test commands and known identity limitations. Run `npm run reviews:configure` after applying migrations to configure the server signing key locally without printing it.
+
+Production submissions fail closed until real Turnstile configuration exists. No review editing, vendor dashboard, or NFC verification is included.
 
 ## Tooling compatibility
 

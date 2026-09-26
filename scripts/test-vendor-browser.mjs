@@ -18,7 +18,7 @@ try {
     const body = await page.locator("main").textContent();
     for (const value of ["Food & Beverage", "Dessert", "Taman Mount Austin", "Johor Bahru", "Burnt Cheesecake", "Tiramisu Cup", "Matcha Brownie", "Lovely sample dessert selection.", "4.5", "2 published reviews", "No gallery photos yet.", "Price not listed", "No ratings yet"]) assert.ok(body.includes(value), `Missing ${value}`);
     assert.ok(!body.includes("Pending fixture"));
-    assert.equal(await page.getByRole("button", { name: "Leave a Review" }).isDisabled(), true);
+    assert.equal(await page.getByRole("link", { name: "Leave a Review" }).getAttribute("href"), "/vendor/aisyah-dessert/review");
     assert.equal(await page.locator('a[href^="tel:"],a[href*="wa.me"]').count(), 0);
     assert.equal(await page.evaluate(() => document.documentElement.scrollWidth > innerWidth), false, `Overflow at ${width}`);
     assert.match(await page.title(), /Aisyah Dessert — Taman Mount Austin \| Singgah/);

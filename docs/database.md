@@ -178,3 +178,7 @@ fictional seed counts. No managed auth users are created by tests.
 - [Supabase API key conventions](https://supabase.com/docs/guides/getting-started/api-keys)
 - [RLS and invoker views](https://supabase.com/docs/guides/database/postgres/row-level-security)
 - [Column-level privileges](https://supabase.com/docs/guides/database/postgres/column-level-security)
+
+## Sprint 4 update
+
+Migration 20260926000400_review_submission.sql adds atomic customer review submission with auth.uid-bound ownership and server-signed CAPTCHA permits. Direct review writes remain denied. See [review submission architecture](review-submission.md) for the current authentication, moderation, key management and testing workflow. Earlier sections describe the Sprint 1 baseline; anonymous customer submission is now implemented.

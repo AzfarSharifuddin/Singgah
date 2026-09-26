@@ -4,10 +4,14 @@ import { createClient } from "@supabase/supabase-js";
 import type { Database } from "@/types/database";
 import { getSupabaseConfig } from "./config";
 
-// Read-only public client. Cookie/session auth belongs to a later sprint.
+let browserClient: ReturnType<typeof createClient<Database>> | undefined;
+
+// Used only for customer actions. Public browsing continues on the stateless server client.
 export function createBrowserSupabaseClient() {
+  if (browserClient) return browserClient;
   const { url, key } = getSupabaseConfig();
-  return createClient<Database>(url, key, {
-    auth: { persistSession: false, autoRefreshToken: false, detectSessionInUrl: false },
+  browserClient = createClient<Database>(url, key, {
+    auth: { persistSession: true, autoRefreshToken: true, detectSessionInUrl: false },
   });
+  return browserClient;
 }
