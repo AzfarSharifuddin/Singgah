@@ -16,7 +16,9 @@
     "db:migrate": "node scripts/database.mjs migrate",
     "db:seed": "node scripts/database.mjs seed",
     "db:test": "node scripts/database.mjs test",
-    "supabase:check": "node scripts/check-supabase.ts"
+    "supabase:check": "node scripts/check-supabase.ts",
+    "test:vendor-format": "node --test scripts/test-vendor-format.ts",
+    "test:vendor-browser": "node scripts/test-vendor-browser.mjs"
   },
   "dependencies": {
     "@supabase/supabase-js": "^2.117.2",

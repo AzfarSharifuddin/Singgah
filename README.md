@@ -4,6 +4,7 @@ Stories Make Places Brighter.
 
 Next.js App Router, TypeScript, Tailwind CSS, ESLint and the Sprint 1 Supabase foundation.
 The landing screen is a temporary development placeholder, not the product homepage.
+Sprint 2 adds the real Supabase-backed public vendor profile at `/vendor/[slug]`.
 
 ## Development
 
@@ -146,7 +147,68 @@ Tokens live in `src/app/globals.css` and expose Tailwind color utilities:
 The placeholder uses system fonts, avoiding build-time font downloads. It is
 marked noindex; revisit metadata when public product pages are ready.
 
-Sprint 2 requires approval before any product-screen work begins.
+## Public vendor profile (Sprint 2)
+
+Start the app and visit `/vendor/aisyah-dessert`. The page uses the existing
+publishable-key server client and public RLS permissions; no privileged client is
+used. The database must already contain the Sprint 1 schema and development seed.
+
+`src/lib/vendors/profile.ts` reads the public vendor and related category/location
+records, active products, public media metadata, published reviews and rating
+summary views. Vendor metadata and page rendering share a request-scoped cached
+lookup. The route renders dynamically so publication changes are not held in a
+shared page cache. Reviews paginate in groups of ten with `?reviews=2`.
+
+The profile includes identity, about, safe contact/social links, product cards,
+gallery, published reviews, rating distribution and structured location. Phone
+numbers support Malaysian local formatting; unsafe web protocols/embedded URL
+credentials are rejected. Missing public vendors return HTTP 404; data failures
+show a retry boundary instead of pretending the vendor is absent. A loading
+fallback appears only after the vendor has been found.
+
+The homepage remains noindex. Vendor pages override this with index/follow and
+vendor-specific title, description and Open Graph metadata. Absolute canonical
+URLs, sitemap and production-domain setup remain deployment work; no speculative
+domain is emitted. Images are not used as expiring Open Graph URLs.
+
+Images resolve database-authorized paths in the future private `vendor-media`
+bucket, using the public client's permissions and short-lived signed URLs.
+Next Image restricts remote sources to that project's Storage path. Until actual
+assets and Storage read policies exist, honest placeholders are shown. Failed
+image loads also fall back. No bucket, policy, upload UI or image assets were added.
+
+The location card links to Google Maps only when both coordinates exist; it needs
+no API key and has no embedded map. The review CTA is disabled and clearly marked
+coming soon. Discovery, auth/dashboard, review submission and NFC tracking remain
+out of scope.
+
+### Verification
+
+```text
+npm run test:vendor-format
+npm run lint
+npm run typecheck
+npm run build
+```
+
+The browser smoke test uses an existing Playwright runtime and installed Microsoft
+Edge. Set `PLAYWRIGHT_MODULE` to the runtime's absolute module directory if it is
+not installed in your tool environment. Start the production server with
+`npm start`, then run `npm run test:vendor-browser`. Optional `TEST_BASE_URL`
+defaults to `http://127.0.0.1:3000`; `SCREENSHOT_DIR` saves screenshots outside the
+repository. No Playwright/browser package was added to application dependencies.
+
+Verified against hosted fixtures at 375px and 1280px: Aisyah Dessert identity,
+taxonomy/location, three products, product averages, 4.5 overall rating, two
+published reviews, hidden pending review, absent contact/address/gallery data,
+metadata, disabled review CTA, no overflow, readable heading width, and no browser
+runtime errors. Luna Hijab covers an anonymous reviewer; Bunga Kertas Studio covers
+no reviews. Invalid and draft-vendor URLs return HTTP 404. Real image rendering and
+contact/map destinations await fixture assets/contact data; URL formatting is
+unit-tested. The zero-product branch is implemented, but current published seed
+vendors all have products.
+
+Sprint 3 requires approval before discovery/search or other product work begins.
 
 ## Tooling compatibility
 
