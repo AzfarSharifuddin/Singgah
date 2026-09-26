@@ -18,7 +18,9 @@
     "db:test": "node scripts/database.mjs test",
     "supabase:check": "node scripts/check-supabase.ts",
     "test:vendor-format": "node --test scripts/test-vendor-format.ts",
-    "test:vendor-browser": "node scripts/test-vendor-browser.mjs"
+    "test:vendor-browser": "node scripts/test-vendor-browser.mjs",
+    "test:discovery": "node --test scripts/test-discovery.ts",
+    "test:discovery-browser": "node scripts/test-discovery-browser.mjs"
   },
   "dependencies": {
     "@supabase/supabase-js": "^2.117.2",
