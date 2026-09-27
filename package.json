@@ -28,7 +28,8 @@
     "test:vendor-management": "node --test scripts/test-vendor-management.ts",
     "test:vendor-management-db": "node scripts/test-vendor-management-db.mjs",
     "test:vendor-storage": "node scripts/test-vendor-storage.mjs",
-    "test:vendor-management-browser": "node scripts/test-vendor-management-browser.mjs"
+    "test:vendor-management-browser": "node scripts/test-vendor-management-browser.mjs",
+    "test:community-browser": "node scripts/test-community-browser.mjs"
   },
   "dependencies": {
     "@supabase/ssr": "^0.12.7",

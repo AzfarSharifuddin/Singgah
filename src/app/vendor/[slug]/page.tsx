@@ -1,3 +1,4 @@
+import { PublicFooter } from "@/components/public-footer";
 import type { Metadata } from "next";
 import Link from "next/link";
 import { notFound } from "next/navigation";
@@ -11,7 +12,7 @@ import { VendorReviews } from "@/components/vendor/reviews";
 import { RatingStars } from "@/components/vendor/rating-stars";
 
 export const dynamic = "force-dynamic";
-type Props = { params: Promise<{ slug: string }>; searchParams: Promise<{ reviews?: string | string[] }> };
+type Props = { params: Promise<{ slug: string }>; searchParams: Promise<{ reviews?: string | string[]; reviewSort?: string | string[] }> };
 
 export async function generateMetadata({ params }: Props): Promise<Metadata> {
   const vendor = await getPublicVendor((await params).slug);
@@ -25,8 +26,8 @@ export async function generateMetadata({ params }: Props): Promise<Metadata> {
   };
 }
 
-async function ProfileDetails({ vendor, reviewPage }: { vendor: PublicVendor; reviewPage: number }) {
-  const { products, images, summary, reviews } = await getProfileContent(vendor.id, reviewPage);
+async function ProfileDetails({ vendor, reviewPage, sort }: { vendor: PublicVendor; reviewPage: number; sort: "newest" | "highest" | "lowest" }) {
+  const { products, images, summary, reviews } = await getProfileContent(vendor.id, reviewPage, sort);
   const cover = images.find((image) => image.image_type === "cover");
   const logo = images.find((image) => image.image_type === "logo");
   const gallery = images.filter((image) => image.image_type === "gallery");
@@ -68,7 +69,7 @@ async function ProfileDetails({ vendor, reviewPage }: { vendor: PublicVendor; re
         <section id="photos" aria-labelledby="photos-heading" className="scroll-mt-8 border-t border-hutan/10 pt-9"><h2 id="photos-heading" className="font-serif text-3xl">A closer look</h2>
           {gallery.length ? <div className="mt-6 grid grid-cols-2 gap-3 sm:grid-cols-3">{gallery.map((image) => <ProfileImage key={image.id} src={image.url} alt={image.alt_text || `${vendor.name} business photo`} className="aspect-square rounded-xl" sizes="(max-width: 639px) 45vw, 240px" />)}</div> : <div className="mt-5 flex min-h-32 items-center justify-center rounded-2xl border border-dashed border-hutan/20 bg-[#f5f1e9] px-6 text-center"><p className="text-sm leading-6 text-[#5d665f]">No gallery photos yet.<br /><span className="text-xs">A glimpse of this place is coming soon.</span></p></div>}
         </section>
-        <VendorReviews summary={summary} reviews={reviews} slug={vendor.slug} page={reviewPage} />
+        <VendorReviews summary={summary} reviews={reviews} slug={vendor.slug} page={reviewPage} sort={sort} />
       </div>
       <aside className="space-y-5 lg:sticky lg:top-6">
         <section id="location" aria-labelledby="location-heading" className="scroll-mt-8 rounded-2xl border border-hutan/15 bg-white p-6">
@@ -88,13 +89,15 @@ async function ProfileDetails({ vendor, reviewPage }: { vendor: PublicVendor; re
 export default async function VendorPage({ params, searchParams }: Props) {
   const vendor = await getPublicVendor((await params).slug);
   if (!vendor) notFound();
-  const reviewPage = reviewPageNumber((await searchParams).reviews);
+  const query = await searchParams;
+  const reviewPage = reviewPageNumber(query.reviews);
+  const sort = query.reviewSort === "highest" || query.reviewSort === "lowest" ? query.reviewSort : "newest";
   return <div className="min-h-svh bg-[#faf8f3] text-hutan [overflow-wrap:anywhere]">
     <a href="#vendor-content" className="sr-only focus:not-sr-only focus:absolute focus:z-50 focus:rounded focus:bg-white focus:p-4">Skip to vendor profile</a>
     <header className="border-b border-hutan/10"><div className="mx-auto flex max-w-6xl items-center justify-between gap-6 px-5 py-5 sm:px-8"><Link href="/" aria-label="Singgah home" className="inline-flex min-h-11 items-center text-xl font-bold tracking-[0.16em]">SINGGAH<span aria-hidden="true" className="ml-1 text-terracotta">.</span></Link><p className="hidden text-xs text-[#5d665f] sm:block">Stories Make Places Brighter</p><span className="text-[10px] uppercase tracking-[0.16em] sm:hidden">Made of local stories</span></div></header>
     <main id="vendor-content" className="mx-auto max-w-6xl px-5 pb-16 pt-6 sm:px-8 sm:pt-9">
-      <Suspense fallback={<div role="status" className="rounded-3xl border border-hutan/10 bg-white p-10"><h1 className="font-serif text-3xl">{vendor.name}</h1><p className="mt-4 text-sm">Loading this local story…</p></div>}><ProfileDetails vendor={vendor} reviewPage={reviewPage} /></Suspense>
+      <Suspense fallback={<div role="status" className="rounded-3xl border border-hutan/10 bg-white p-10"><h1 className="font-serif text-3xl">{vendor.name}</h1><p className="mt-4 text-sm">Loading this local story…</p></div>}><ProfileDetails vendor={vendor} reviewPage={reviewPage} sort={sort} /></Suspense>
     </main>
-    <footer className="border-t border-hutan/10 px-5 py-8 text-center text-xs text-[#5d665f]">Singgah <span aria-hidden="true">·</span> Stories Make Places Brighter</footer>
+    <PublicFooter />
   </div>;
 }

@@ -1,0 +1,648 @@
+{
+  "source": "https://data.gov.my/data-catalogue/population_district",
+  "license": "CC BY 4.0",
+  "sourceYear": 2025,
+  "retrieved": "2026-09-27",
+  "districts": [
+    {
+      "state": "Johor",
+      "name": "Batu Pahat"
+    },
+    {
+      "state": "Johor",
+      "name": "Johor Bahru"
+    },
+    {
+      "state": "Johor",
+      "name": "Kluang"
+    },
+    {
+      "state": "Johor",
+      "name": "Kota Tinggi"
+    },
+    {
+      "state": "Johor",
+      "name": "Mersing"
+    },
+    {
+      "state": "Johor",
+      "name": "Muar"
+    },
+    {
+      "state": "Johor",
+      "name": "Pontian"
+    },
+    {
+      "state": "Johor",
+      "name": "Segamat"
+    },
+    {
+      "state": "Johor",
+      "name": "Kulai"
+    },
+    {
+      "state": "Johor",
+      "name": "Tangkak"
+    },
+    {
+      "state": "Kedah",
+      "name": "Baling"
+    },
+    {
+      "state": "Kedah",
+      "name": "Bandar Baharu"
+    },
+    {
+      "state": "Kedah",
+      "name": "Kota Setar"
+    },
+    {
+      "state": "Kedah",
+      "name": "Kuala Muda"
+    },
+    {
+      "state": "Kedah",
+      "name": "Kubang Pasu"
+    },
+    {
+      "state": "Kedah",
+      "name": "Kulim"
+    },
+    {
+      "state": "Kedah",
+      "name": "Langkawi"
+    },
+    {
+      "state": "Kedah",
+      "name": "Padang Terap"
+    },
+    {
+      "state": "Kedah",
+      "name": "Sik"
+    },
+    {
+      "state": "Kedah",
+      "name": "Yan"
+    },
+    {
+      "state": "Kedah",
+      "name": "Pendang"
+    },
+    {
+      "state": "Kedah",
+      "name": "Pokok Sena"
+    },
+    {
+      "state": "Kelantan",
+      "name": "Bachok"
+    },
+    {
+      "state": "Kelantan",
+      "name": "Kota Bharu"
+    },
+    {
+      "state": "Kelantan",
+      "name": "Machang"
+    },
+    {
+      "state": "Kelantan",
+      "name": "Pasir Mas"
+    },
+    {
+      "state": "Kelantan",
+      "name": "Pasir Puteh"
+    },
+    {
+      "state": "Kelantan",
+      "name": "Tanah Merah"
+    },
+    {
+      "state": "Kelantan",
+      "name": "Tumpat"
+    },
+    {
+      "state": "Kelantan",
+      "name": "Gua Musang"
+    },
+    {
+      "state": "Kelantan",
+      "name": "Kuala Krai"
+    },
+    {
+      "state": "Kelantan",
+      "name": "Jeli"
+    },
+    {
+      "state": "Kelantan",
+      "name": "Kecil Lojing"
+    },
+    {
+      "state": "Melaka",
+      "name": "Alor Gajah"
+    },
+    {
+      "state": "Melaka",
+      "name": "Jasin"
+    },
+    {
+      "state": "Melaka",
+      "name": "Melaka Tengah"
+    },
+    {
+      "state": "Negeri Sembilan",
+      "name": "Jelebu"
+    },
+    {
+      "state": "Negeri Sembilan",
+      "name": "Kuala Pilah"
+    },
+    {
+      "state": "Negeri Sembilan",
+      "name": "Port Dickson"
+    },
+    {
+      "state": "Negeri Sembilan",
+      "name": "Rembau"
+    },
+    {
+      "state": "Negeri Sembilan",
+      "name": "Seremban"
+    },
+    {
+      "state": "Negeri Sembilan",
+      "name": "Tampin"
+    },
+    {
+      "state": "Negeri Sembilan",
+      "name": "Jempol"
+    },
+    {
+      "state": "Pahang",
+      "name": "Bentong"
+    },
+    {
+      "state": "Pahang",
+      "name": "Cameron Highland"
+    },
+    {
+      "state": "Pahang",
+      "name": "Jerantut"
+    },
+    {
+      "state": "Pahang",
+      "name": "Kuantan"
+    },
+    {
+      "state": "Pahang",
+      "name": "Lipis"
+    },
+    {
+      "state": "Pahang",
+      "name": "Pekan"
+    },
+    {
+      "state": "Pahang",
+      "name": "Raub"
+    },
+    {
+      "state": "Pahang",
+      "name": "Temerloh"
+    },
+    {
+      "state": "Pahang",
+      "name": "Rompin"
+    },
+    {
+      "state": "Pahang",
+      "name": "Maran"
+    },
+    {
+      "state": "Pahang",
+      "name": "Bera"
+    },
+    {
+      "state": "Penang",
+      "name": "Sp Tengah"
+    },
+    {
+      "state": "Penang",
+      "name": "Sp Utara"
+    },
+    {
+      "state": "Penang",
+      "name": "Sp Selatan"
+    },
+    {
+      "state": "Penang",
+      "name": "Timur Laut"
+    },
+    {
+      "state": "Penang",
+      "name": "Barat Daya"
+    },
+    {
+      "state": "Perak",
+      "name": "Batang Padang"
+    },
+    {
+      "state": "Perak",
+      "name": "Manjung"
+    },
+    {
+      "state": "Perak",
+      "name": "Kinta"
+    },
+    {
+      "state": "Perak",
+      "name": "Kerian"
+    },
+    {
+      "state": "Perak",
+      "name": "Kuala Kangsar"
+    },
+    {
+      "state": "Perak",
+      "name": "Larut Dan Matang"
+    },
+    {
+      "state": "Perak",
+      "name": "Hilir Perak"
+    },
+    {
+      "state": "Perak",
+      "name": "Hulu Perak"
+    },
+    {
+      "state": "Perak",
+      "name": "Perak Tengah"
+    },
+    {
+      "state": "Perak",
+      "name": "Kampar"
+    },
+    {
+      "state": "Perak",
+      "name": "Muallim"
+    },
+    {
+      "state": "Perak",
+      "name": "Bagan Datuk"
+    },
+    {
+      "state": "Perak",
+      "name": "Selama"
+    },
+    {
+      "state": "Selangor",
+      "name": "Gombak"
+    },
+    {
+      "state": "Selangor",
+      "name": "Klang"
+    },
+    {
+      "state": "Selangor",
+      "name": "Kuala Langat"
+    },
+    {
+      "state": "Selangor",
+      "name": "Kuala Selangor"
+    },
+    {
+      "state": "Selangor",
+      "name": "Petaling"
+    },
+    {
+      "state": "Selangor",
+      "name": "Sabak Bernam"
+    },
+    {
+      "state": "Selangor",
+      "name": "Sepang"
+    },
+    {
+      "state": "Selangor",
+      "name": "Ulu Langat"
+    },
+    {
+      "state": "Selangor",
+      "name": "Ulu Selangor"
+    },
+    {
+      "state": "Terengganu",
+      "name": "Besut"
+    },
+    {
+      "state": "Terengganu",
+      "name": "Dungun"
+    },
+    {
+      "state": "Terengganu",
+      "name": "Kemaman"
+    },
+    {
+      "state": "Terengganu",
+      "name": "Kuala Terengganu"
+    },
+    {
+      "state": "Terengganu",
+      "name": "Marang"
+    },
+    {
+      "state": "Terengganu",
+      "name": "Hulu Terengganu"
+    },
+    {
+      "state": "Terengganu",
+      "name": "Setiu"
+    },
+    {
+      "state": "Terengganu",
+      "name": "Kuala Nerus"
+    },
+    {
+      "state": "Sabah",
+      "name": "Tawau"
+    },
+    {
+      "state": "Sabah",
+      "name": "Lahad Datu"
+    },
+    {
+      "state": "Sabah",
+      "name": "Semporna"
+    },
+    {
+      "state": "Sabah",
+      "name": "Sandakan"
+    },
+    {
+      "state": "Sabah",
+      "name": "Kinabatangan"
+    },
+    {
+      "state": "Sabah",
+      "name": "Beluran"
+    },
+    {
+      "state": "Sabah",
+      "name": "Kota Kinabalu"
+    },
+    {
+      "state": "Sabah",
+      "name": "Ranau"
+    },
+    {
+      "state": "Sabah",
+      "name": "Kota Belud"
+    },
+    {
+      "state": "Sabah",
+      "name": "Tuaran"
+    },
+    {
+      "state": "Sabah",
+      "name": "Penampang"
+    },
+    {
+      "state": "Sabah",
+      "name": "Papar"
+    },
+    {
+      "state": "Sabah",
+      "name": "Kudat"
+    },
+    {
+      "state": "Sabah",
+      "name": "Kota Marudu"
+    },
+    {
+      "state": "Sabah",
+      "name": "Pitas"
+    },
+    {
+      "state": "Sabah",
+      "name": "Beaufort"
+    },
+    {
+      "state": "Sabah",
+      "name": "Kuala Penyu"
+    },
+    {
+      "state": "Sabah",
+      "name": "Sipitang"
+    },
+    {
+      "state": "Sabah",
+      "name": "Tenom"
+    },
+    {
+      "state": "Sabah",
+      "name": "Nabawan"
+    },
+    {
+      "state": "Sabah",
+      "name": "Keningau"
+    },
+    {
+      "state": "Sabah",
+      "name": "Tambunan"
+    },
+    {
+      "state": "Sabah",
+      "name": "Kunak"
+    },
+    {
+      "state": "Sabah",
+      "name": "Tongod"
+    },
+    {
+      "state": "Sabah",
+      "name": "Putatan"
+    },
+    {
+      "state": "Sabah",
+      "name": "Telupid"
+    },
+    {
+      "state": "Sabah",
+      "name": "Kalabakan"
+    },
+    {
+      "state": "Sarawak",
+      "name": "Kuching"
+    },
+    {
+      "state": "Sarawak",
+      "name": "Bau"
+    },
+    {
+      "state": "Sarawak",
+      "name": "Lundu"
+    },
+    {
+      "state": "Sarawak",
+      "name": "Samarahan"
+    },
+    {
+      "state": "Sarawak",
+      "name": "Serian"
+    },
+    {
+      "state": "Sarawak",
+      "name": "Simunjan"
+    },
+    {
+      "state": "Sarawak",
+      "name": "Sri Aman"
+    },
+    {
+      "state": "Sarawak",
+      "name": "Lubok Antu"
+    },
+    {
+      "state": "Sarawak",
+      "name": "Betong"
+    },
+    {
+      "state": "Sarawak",
+      "name": "Saratok"
+    },
+    {
+      "state": "Sarawak",
+      "name": "Sarikei"
+    },
+    {
+      "state": "Sarawak",
+      "name": "Maradong"
+    },
+    {
+      "state": "Sarawak",
+      "name": "Daro"
+    },
+    {
+      "state": "Sarawak",
+      "name": "Julau"
+    },
+    {
+      "state": "Sarawak",
+      "name": "Sibu"
+    },
+    {
+      "state": "Sarawak",
+      "name": "Dalat"
+    },
+    {
+      "state": "Sarawak",
+      "name": "Mukah"
+    },
+    {
+      "state": "Sarawak",
+      "name": "Kanowit"
+    },
+    {
+      "state": "Sarawak",
+      "name": "Bintulu"
+    },
+    {
+      "state": "Sarawak",
+      "name": "Tatau"
+    },
+    {
+      "state": "Sarawak",
+      "name": "Kapit"
+    },
+    {
+      "state": "Sarawak",
+      "name": "Song"
+    },
+    {
+      "state": "Sarawak",
+      "name": "Belaga"
+    },
+    {
+      "state": "Sarawak",
+      "name": "Miri"
+    },
+    {
+      "state": "Sarawak",
+      "name": "Marudi"
+    },
+    {
+      "state": "Sarawak",
+      "name": "Limbang"
+    },
+    {
+      "state": "Sarawak",
+      "name": "Lawas"
+    },
+    {
+      "state": "Sarawak",
+      "name": "Matu"
+    },
+    {
+      "state": "Sarawak",
+      "name": "Asajaya"
+    },
+    {
+      "state": "Sarawak",
+      "name": "Pakan"
+    },
+    {
+      "state": "Sarawak",
+      "name": "Selangau"
+    },
+    {
+      "state": "Sarawak",
+      "name": "Tebedu"
+    },
+    {
+      "state": "Sarawak",
+      "name": "Pusa"
+    },
+    {
+      "state": "Sarawak",
+      "name": "Kabong"
+    },
+    {
+      "state": "Sarawak",
+      "name": "Tanjung Manis"
+    },
+    {
+      "state": "Sarawak",
+      "name": "Sebauh"
+    },
+    {
+      "state": "Sarawak",
+      "name": "Bukit Mabong"
+    },
+    {
+      "state": "Sarawak",
+      "name": "Subis"
+    },
+    {
+      "state": "Sarawak",
+      "name": "Beluru"
+    },
+    {
+      "state": "Sarawak",
+      "name": "Telang Usan"
+    },
+    {
+      "state": "Perlis",
+      "name": "Perlis"
+    },
+    {
+      "state": "Kuala Lumpur",
+      "name": "Kuala Lumpur"
+    },
+    {
+      "state": "Labuan",
+      "name": "Labuan"
+    },
+    {
+      "state": "Putrajaya",
+      "name": "Putrajaya"
+    }
+  ]
+}

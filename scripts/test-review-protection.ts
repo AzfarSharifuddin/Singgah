@@ -41,7 +41,7 @@ test("Siteverify rejects failure, wrong action and wrong hostname", async () => 
 
 test("permit covers exact review data and authenticated identity with short expiry", () => {
   const secret = "b".repeat(64);
-  const review = { vendorId: "vendor-fixture", rating: 5, text: null, products: [] };
+  const review = { vendorId: "vendor-fixture", termsAccepted: true as const, rating: 5, text: null, products: [] };
   const permit = reviewPermit(review, "customer-fixture", secret);
   const payload = JSON.parse(permit.payload);
   assert.equal(payload.customerId, "customer-fixture");

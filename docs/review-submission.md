@@ -160,3 +160,11 @@ per identity. No invasive fingerprinting, IP profiling, OTP or NFC verification
 is implemented. Anonymous Auth retention/cleanup and traffic monitoring need an
 operational policy before significant public traffic. No editing, deletion,
 vendor replies, review photos, reporting or moderation dashboard is included.
+
+## Terms acceptance and community sorting
+
+New submissions require an explicit termsAccepted=true in application validation. The server signs the current terms version in its short-lived permit. Migration 20260927000300 replaces the RPC with the same security/transaction model plus required acceptance/version checks; it stores terms_version and terms_accepted_at atomically with the review. These columns have no public SELECT grant. Existing reviews stay NULL (no fabricated acceptance). Changing terms requires a coordinated new version and RPC migration. Deploy the application and migration together; old clients fail closed and must reload.
+
+/vendor/[slug]?reviewSort=newest|highest|lowest&reviews=2 sorts published reviews in PostgreSQL before pagination. Rating sorts break ties by newest timestamp, then ID. Default/invalid sort is newest. Applying a different sort resets the review page.
+
+The initial /terms wording needs owner/legal review before public launch. Add the actual operator identity, support/data-rights contact and a separate privacy notice once these are supplied; do not invent contact details or treat the checkbox as blanket privacy consent. Malaysian privacy notice guidance: https://www.pdp.gov.my/ppdpv1/en/akta/guidance-on-the-preparation-of-personal-data-protection-notices/ . Email registration testing remains paused at the owner's request.

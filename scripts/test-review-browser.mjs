@@ -76,6 +76,8 @@ try {
   }
   if (!canSubmit) throw new Error("Browser layout/404/no-products checks passed; live submissions blocked: enable Supabase Anonymous Sign-Ins, then rerun.");
 
+  const initial = (await db.query("select * from public.vendor_rating_summaries where vendor_id=$1", [vendorId])).rows[0];
+  const initialProduct = (await db.query("select * from public.product_rating_summaries where product_id=$1", [productId])).rows[0];
   for (const scenario of ["A", "B", "C", "D", "G"]) {
     const context = await browser.newContext({ viewport: { width: scenario === "B" || scenario === "D" ? 1280 : 375, height: 900 } });
     const page = await context.newPage();
@@ -97,6 +99,9 @@ try {
     await page.getByRole("group", { name: "Overall experience (required)" }).locator("label").nth(4).click();
     if (scenario === "B" || scenario === "D") await page.getByLabel("Tell us about your experience").fill("  Sprint 4 controlled browser review.  ");
     if (scenario === "C" || scenario === "D") await page.getByRole("group", { name: "Burnt Cheesecake", exact: true }).locator("label").nth(3).click();
+    await submit.click();
+    await page.getByRole("alert").filter({ hasText: "agree to the terms" }).waitFor();
+    await page.getByRole("checkbox").check();
     const request = page.waitForResponse((response) => response.url() === `${base}/api/reviews`, { timeout: 120000 });
     await submit.click();
     const response = await request;
@@ -112,15 +117,15 @@ try {
     await page.getByRole("link", { name: "Back to vendor" }).click();
     await page.getByRole("heading", { name: scenario === "G" ? fixtureName : "Aisyah Dessert", exact: true }).waitFor();
     if (scenario !== "G") {
-      await page.getByText("3 published reviews", { exact: true }).waitFor();
-      assert.equal(await page.locator("#reviews").getByText("4.7", { exact: true }).count(), 1);
-      assert.equal(await page.getByRole("img", { name: "5 stars: 2 reviews", exact: true }).count(), 1);
-      assert.equal(await page.getByRole("img", { name: "4 stars: 1 reviews", exact: true }).count(), 1);
-      assert.equal(Number((await db.query("select average_rating from public.vendor_rating_summaries where vendor_id=$1", [vendorId])).rows[0].average_rating).toFixed(1), "4.7");
+      await page.getByText(`${Number(initial.review_count) + 1} published reviews`, { exact: true }).waitFor();
+      assert.equal(await page.locator("#reviews").getByText(((Number(initial.average_rating) * Number(initial.review_count) + 5) / (Number(initial.review_count) + 1)).toFixed(1), { exact: true }).count(), 1);
+      assert.equal(await page.getByRole("img", { name: `5 stars: ${Number(initial.stars_5) + 1} reviews`, exact: true }).count(), 1);
+      assert.equal(await page.getByRole("img", { name: `4 stars: ${initial.stars_4} reviews`, exact: true }).count(), 1);
+      assert.equal(Number((await db.query("select average_rating from public.vendor_rating_summaries where vendor_id=$1", [vendorId])).rows[0].average_rating).toFixed(1), ((Number(initial.average_rating) * Number(initial.review_count) + 5) / (Number(initial.review_count) + 1)).toFixed(1));
       const summary = (await db.query("select rating_count from public.product_rating_summaries where product_id=$1", [productId])).rows[0];
-      assert.equal(Number(summary.rating_count), count + 1);
+      assert.equal(Number(summary.rating_count), count + Number(initialProduct.rating_count));
       const cheesecake = page.locator("#products article").filter({ has: page.getByRole("heading", { name: "Burnt Cheesecake", exact: true }) });
-      assert.ok((await cheesecake.innerText()).includes(count ? "4.5 · 2 ratings" : "5.0 · 1 rating"), "Product average and count update in the rendered profile");
+      assert.ok((await cheesecake.innerText()).includes(`${((Number(initialProduct.average_rating) * Number(initialProduct.rating_count) + count * 4) / (Number(initialProduct.rating_count) + count)).toFixed(1)} · ${Number(initialProduct.rating_count) + count} ${Number(initialProduct.rating_count) + count === 1 ? "rating" : "ratings"}`), "Product average and count update in the rendered profile");
     }
     assert.equal(await identity(page), user, "Identity persists on vendor navigation");
     await page.reload({ waitUntil: "networkidle" });

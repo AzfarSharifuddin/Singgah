@@ -23,8 +23,10 @@ export const getPublicVendor = cache(async (slug: string) => {
 export type PublicVendor = NonNullable<Awaited<ReturnType<typeof getPublicVendor>>>;
 export const REVIEWS_PER_PAGE = 10;
 
-export async function getProfileContent(vendorId: string, reviewPage: number) {
+export async function getProfileContent(vendorId: string, reviewPage: number, sort: "newest" | "highest" | "lowest" = "newest") {
   const client = createServerSupabaseClient();
+  let reviewQuery = client.from("reviews").select("id,rating,review_text,reviewer_name,created_at").eq("vendor_id", vendorId).eq("status", "published");
+  if (sort !== "newest") reviewQuery = reviewQuery.order("rating", { ascending: sort === "lowest" });
   const [products, images, summary, reviews] = await Promise.all([
     client.from("products").select("id,name,description,price,currency_code")
       .eq("vendor_id", vendorId).eq("is_active", true).order("display_order").order("id"),
@@ -32,8 +34,7 @@ export async function getProfileContent(vendorId: string, reviewPage: number) {
       .eq("vendor_id", vendorId).eq("is_public", true).order("display_order").order("id"),
     client.from("vendor_rating_summaries").select("average_rating,review_count,stars_1,stars_2,stars_3,stars_4,stars_5")
       .eq("vendor_id", vendorId).single(),
-    client.from("reviews").select("id,rating,review_text,reviewer_name,created_at")
-      .eq("vendor_id", vendorId).eq("status", "published")
+    reviewQuery
       .order("created_at", { ascending: false }).order("id")
       .range((reviewPage - 1) * REVIEWS_PER_PAGE, reviewPage * REVIEWS_PER_PAGE - 1),
   ]);

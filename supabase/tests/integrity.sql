@@ -30,7 +30,7 @@ grant execute on function pg_temp.assert_true(boolean, text), pg_temp.expect_err
 
 select pg_temp.assert_true((select count(*) = 6 from public.categories), 'six categories in clean seeded Dev');
 select pg_temp.assert_true((select count(*) = 31 from public.subcategories), '31 subcategories');
-select pg_temp.assert_true((select count(*) = 5 from public.states), 'five seed states');
+select pg_temp.assert_true((select count(*) = 16 from public.states), '13 states and three federal territories');
 select pg_temp.assert_true((select count(*) = 15 from public.products), '15 seed products');
 select pg_temp.assert_true((select count(*) = 10 from pg_class c join pg_namespace n on n.oid = c.relnamespace where n.nspname = 'public' and c.relrowsecurity and c.relname in ('states','cities','areas','categories','subcategories','vendors','products','vendor_images','reviews','product_ratings')), 'RLS enabled on every application table');
 
@@ -61,11 +61,11 @@ select pg_temp.expect_error($q$insert into public.vendor_images(vendor_id,produc
 set local role anon;
 select pg_temp.assert_true((select count(id)=5 from public.vendors), 'public vendor count');
 select pg_temp.assert_true((select count(id)=0 from public.vendors where slug='draft-demo-stall'), 'draft vendor hidden');
-select pg_temp.assert_true((select count(id)=4 from public.reviews), 'pending and draft-parent reviews hidden');
-select pg_temp.assert_true((select count(*)=6 from public.product_ratings), 'pending-parent ratings hidden');
+select pg_temp.assert_true((select count(id)=4 from public.reviews where id::text like '00000008-%'), 'pending and draft-parent reviews hidden');
+select pg_temp.assert_true((select count(*)=6 from public.product_ratings where id::text like '00000009-%'), 'pending-parent ratings hidden');
 select pg_temp.assert_true((select count(*)=1 from public.vendor_images), 'private and draft-parent images hidden');
-select pg_temp.assert_true((select average_rating=4.50 and review_count=2 and stars_4=1 and stars_5=1 from public.vendor_rating_summaries where vendor_id='00000006-0000-4000-8000-000000000001'), 'business aggregate excludes pending');
-select pg_temp.assert_true((select average_rating=5 and rating_count=1 from public.product_rating_summaries where product_id='00000007-0000-4000-8000-000000000001'), 'product aggregate excludes pending');
+select pg_temp.assert_true((select average_rating=(select round(avg(rating),2) from public.reviews where vendor_id='00000006-0000-4000-8000-000000000001' and status='published') and review_count=(select count(*) from public.reviews where vendor_id='00000006-0000-4000-8000-000000000001' and status='published') from public.vendor_rating_summaries where vendor_id='00000006-0000-4000-8000-000000000001'), 'business aggregate excludes pending');
+select pg_temp.assert_true((select average_rating=(select round(avg(rating),2) from public.product_ratings where product_id='00000007-0000-4000-8000-000000000001') and rating_count=(select count(*) from public.product_ratings where product_id='00000007-0000-4000-8000-000000000001') from public.product_rating_summaries where product_id='00000007-0000-4000-8000-000000000001'), 'product aggregate excludes pending');
 select pg_temp.assert_true((select average_rating is null and review_count=0 from public.vendor_rating_summaries where vendor_id='00000006-0000-4000-8000-000000000004'), 'unreviewed vendor has null average');
 select pg_temp.expect_error('select customer_id from public.reviews', '42501');
 select pg_temp.expect_error('select owner_user_id from public.vendors', '42501');

@@ -298,3 +298,7 @@ See [vendor architecture, setup, security and tests](docs/vendor-management.md) 
 New checks: `npm run test:vendor-management`, `npm run test:vendor-management-db`, `npm run test:vendor-storage` and `npm run test:vendor-management-browser`. Read the test-account/cleanup notes before running hosted suites. The new migration is `20260927000100_vendor_management.sql`; applied history is unchanged. Supabase SSR and sharp are the only added application dependencies.
 
 Earlier sprint sections describe their original scope; Sprint 5 supersedes the earlier statements that Storage and vendor writes are not yet implemented.
+
+### Community polish
+
+Public footer links to /faq and /terms. Reviews support newest/highest/lowest sorting and mandatory terms acceptance (validated in the form, API and signed database transaction). See docs/review-submission.md. National static location data covers 16 states/territories and 160 DOSM district units, retaining existing city/locality records; see docs/malaysian-locations.md for attribution and precise coverage. Apply new migrations using npm run db:migrate; do not re-seed hosted vendor data for this update.

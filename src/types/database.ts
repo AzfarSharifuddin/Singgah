@@ -113,6 +113,8 @@ type reviewsRow = {
   reviewer_name: string | null;
   status: "pending" | "published" | "rejected" | "flagged";
   verification_status: "unverified" | "verified";
+  terms_version: string | null;
+  terms_accepted_at: string | null;
 };
 
 type product_ratingsRow = {

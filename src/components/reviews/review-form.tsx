@@ -19,6 +19,7 @@ function Stars({ label, value, onChange, disabled }: { label: string; value: num
 }
 
 export function ReviewForm({ vendorId, slug, products, siteKey }: { vendorId: string; slug: string; products: { id: string; name: string }[]; siteKey: string }) {
+  const [termsAccepted, setTermsAccepted] = useState(false);
   const [rating, setRating] = useState(0);
   const [text, setText] = useState("");
   const [ratings, setRatings] = useState<Record<string, number>>({});
@@ -71,7 +72,7 @@ export function ReviewForm({ vendorId, slug, products, siteKey }: { vendorId: st
     if (busy.current) return;
     setError("");
     let parsed;
-    try { parsed = parseReview({ vendorId, rating, text, products: Object.entries(ratings).map(([productId, value]) => ({ productId, rating: value })) }); }
+    try { parsed = parseReview({ vendorId, termsAccepted, rating, text, products: Object.entries(ratings).map(([productId, value]) => ({ productId, rating: value })) }); }
     catch (cause) { setError(cause instanceof Error ? cause.message : "Please check your review."); return; }
     busy.current = true;
     setStatus("Checking your submission…");
@@ -103,6 +104,7 @@ export function ReviewForm({ vendorId, slug, products, siteKey }: { vendorId: st
     <Stars label="Overall experience (required)" value={rating} onChange={setRating} disabled={!!status} />
     <div><label htmlFor="experience" className="text-sm font-semibold">Tell us about your experience <span className="font-normal">(optional)</span></label><textarea id="experience" value={text} onChange={(event) => setText(event.target.value)} maxLength={REVIEW_TEXT_LIMIT} disabled={!!status} rows={4} className="mt-3 w-full resize-y rounded-xl border border-hutan/25 p-3" aria-describedby="text-limit" /><p id="text-limit" className="mt-1 text-xs text-[#5d665f]">{text.length}/{REVIEW_TEXT_LIMIT} characters</p></div>
     {products.length > 0 && <section aria-labelledby="products-heading"><h2 id="products-heading" className="font-serif text-2xl">What did you try?</h2><p className="mt-2 text-sm text-[#5d665f]">Optional — rate any items you tried, or skip this section.</p><div className="mt-5 space-y-5">{products.map((product) => <div key={product.id} className="border-t border-hutan/10 pt-4"><Stars label={product.name} value={ratings[product.id] || 0} onChange={(value) => setRatings({ ...ratings, [product.id]: value })} disabled={!!status} />{ratings[product.id] && <button type="button" disabled={!!status} className="mt-1 min-h-11 text-sm underline" aria-label={`Remove rating for ${product.name}`} onClick={() => setRatings(Object.fromEntries(Object.entries(ratings).filter(([id]) => id !== product.id)))}>Remove rating</button>}</div>)}</div></section>}
+    <div className="flex items-start gap-3 rounded-xl bg-[#f5f1e9] p-4"><input id="review-terms" type="checkbox" checked={termsAccepted} onChange={(event) => setTermsAccepted(event.target.checked)} disabled={!!status} className="mt-1 size-5 shrink-0 accent-hutan" aria-required="true" /><label htmlFor="review-terms" className="text-sm leading-6">I agree to the <a href="/terms" target="_blank" rel="noopener noreferrer" className="font-semibold underline underline-offset-4">terms and conditions (opens in a new tab)</a> and confirm this review reflects my own experience.</label></div>
     <div ref={container} />
     <Script src="https://challenges.cloudflare.com/turnstile/v0/api.js?render=explicit" onReady={initialize} onError={() => setError("The security check couldn’t load. Check your connection and reload.")} />
     {error && <p role="alert" className="rounded-xl bg-[#fff1e9] p-4 text-sm text-[#793b28]">{error}</p>}

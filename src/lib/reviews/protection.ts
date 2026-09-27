@@ -1,3 +1,4 @@
+import { REVIEW_TERMS_VERSION } from "./terms.ts";
 import "server-only";
 import { createHmac } from "node:crypto";
 import type { ReviewInput } from "./validation";
@@ -25,6 +26,6 @@ export async function verifyTurnstile(token: string, protection: NonNullable<Ret
 }
 
 export function reviewPermit(input: ReviewInput, customerId: string, secret: string) {
-  const payload = JSON.stringify({ ...input, customerId, expires: Math.floor(Date.now() / 1000) + 120 });
+  const payload = JSON.stringify({ ...input, termsVersion: REVIEW_TERMS_VERSION, customerId, expires: Math.floor(Date.now() / 1000) + 120 });
   return { payload, signature: createHmac("sha256", secret).update(payload).digest("hex") };
 }
