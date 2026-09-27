@@ -46,8 +46,8 @@ export async function getProfileContent(vendorId: string, reviewPage: number) {
     : { data: [], error: null };
   if (ratings.error) throw new Error("Unable to load product ratings.");
 
-  // Sprint 1 did not provision Storage. Resolve only database-authorized paths;
-  // missing buckets/objects/policies result in placeholders, never invented URLs.
+  // Private Storage reads follow public media RLS; pending/hidden media cannot
+  // obtain new signed URLs. Missing files gracefully retain placeholders.
   const allowed = images.data.filter((image) => image.storage_path.startsWith(`vendors/${vendorId}/`));
   const signed = allowed.length
     ? await client.storage.from("vendor-media").createSignedUrls(allowed.map((image) => image.storage_path), 600)

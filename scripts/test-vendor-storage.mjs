@@ -1,0 +1,36 @@
+import assert from "node:assert/strict";
+import { randomUUID } from "node:crypto";
+import sharp from "sharp";
+import { createClient } from "@supabase/supabase-js";
+import { reviewDatabase } from "./review-db-client.mjs";
+import { testAccount, cleanAccount } from "./vendor-test-fixtures.mjs";
+const db = await reviewDatabase(); const accounts=[];
+try {
+  const a=await testAccount(db); accounts.push(a); const b=await testAccount(db); accounts.push(b);
+  const profile={name:"Storage test business",category_id:"00000001-0000-4000-8000-000000000001",state_id:"00000003-0000-4000-8000-000000000001",city_id:"00000004-0000-4000-8000-000000000001"};
+  const av=await a.client.rpc("create_vendor_business",{p_profile:profile}); assert.equal(av.error,null);
+  const bv=await b.client.rpc("create_vendor_business",{p_profile:profile}); assert.equal(bv.error,null);
+  const path=()=>`vendors/${av.data}/logo/${randomUUID()}.webp`;
+  const first=path(), second=path();
+  const bytes=await sharp({create:{width:40,height:40,channels:3,background:"#1B3D2E"}}).webp().toBuffer();
+  const storage=a.client.storage.from("vendor-media");
+  assert.equal((await storage.upload(first,bytes,{contentType:"image/webp"})).error,null);
+  assert.ok((await b.client.storage.from("vendor-media").upload(path(),bytes,{contentType:"image/webp"})).error);
+  await b.client.storage.from("vendor-media").remove([first]);
+  assert.equal((await db.query("select name from storage.objects where bucket_id='vendor-media' and name=$1",[first])).rowCount,1,"Vendor B cannot delete Vendor A's object");
+  assert.ok((await storage.upload(path(),Buffer.from("not an image"),{contentType:"text/plain"})).error);
+  assert.ok((await storage.upload(path(),Buffer.alloc(3145729),{contentType:"image/webp"})).error);
+  assert.equal((await a.client.rpc("attach_vendor_image",{p_path:first,p_kind:"logo"})).error,null);
+  const publicClient=createClient(process.env.NEXT_PUBLIC_SUPABASE_URL,process.env.NEXT_PUBLIC_SUPABASE_PUBLISHABLE_KEY,{auth:{persistSession:false}});
+  assert.ok((await publicClient.storage.from("vendor-media").createSignedUrl(first,60)).error,"Pending media remains private");
+  await db.query("update public.vendors set status='published' where id=$1",[av.data]);
+  const signed=await publicClient.storage.from("vendor-media").createSignedUrl(first,60); assert.equal(signed.error,null);
+  assert.equal((await fetch(signed.data.signedUrl)).status,200);
+  assert.equal((await storage.upload(second,bytes,{contentType:"image/webp"})).error,null);
+  const replaced=await a.client.rpc("attach_vendor_image",{p_path:second,p_kind:"logo"}); assert.equal(replaced.data,first);
+  assert.equal((await storage.remove([first])).error,null); assert.equal((await db.query("select name from storage.objects where bucket_id='vendor-media' and name=$1",[first])).rowCount,0);
+  const image=(await a.client.from("vendor_images").select("id").eq("vendor_id",av.data).single()).data;
+  const detached=await a.client.rpc("detach_vendor_image",{p_image:image.id}); assert.equal(detached.data,second);
+  assert.equal((await storage.remove([second])).error,null); assert.equal((await db.query("select name from storage.objects where bucket_id='vendor-media' and name=$1",[second])).rowCount,0);
+  console.log("PASS: real password Auth, owned uploads, cross-vendor denial, MIME/size restrictions, private pending media, public signed reads, replacement and deletion.");
+} finally { for(const account of accounts) await cleanAccount(db,account); await db.end(); console.log("Removed test accounts/businesses and Storage objects."); }

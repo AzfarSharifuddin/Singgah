@@ -182,3 +182,7 @@ fictional seed counts. No managed auth users are created by tests.
 ## Sprint 4 update
 
 Migration 20260926000400_review_submission.sql adds atomic customer review submission with auth.uid-bound ownership and server-signed CAPTCHA permits. Direct review writes remain denied. See [review submission architecture](review-submission.md) for the current authentication, moderation, key management and testing workflow. Earlier sections describe the Sprint 1 baseline; anonymous customer submission is now implemented.
+
+## Sprint 5 update
+
+Migration 20260927000100_vendor_management.sql adds one-owner uniqueness, confirmed-account ownership helpers, narrow onboarding/media RPCs, owner-specific SELECT and column-limited UPDATE/INSERT policies, and private vendor-media Storage policies. Public read and review-write restrictions remain in force. See [vendor management](vendor-management.md) for current behavior and tests.

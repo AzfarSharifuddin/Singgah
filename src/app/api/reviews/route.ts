@@ -4,6 +4,7 @@ import { getSupabaseConfig } from "@/lib/supabase/config";
 import { parseReview } from "@/lib/reviews/validation";
 import { reviewPermit, reviewProtection, verifyTurnstile } from "@/lib/reviews/protection";
 import { sameOrigin } from "@/lib/reviews/origin";
+import { vendorClient } from "@/lib/supabase/vendor";
 
 const reply = (body: object, status = 200) => Response.json(body, { status, headers: { "Cache-Control": "no-store" } });
 
@@ -11,6 +12,9 @@ export async function POST(request: Request) {
   const protection = reviewProtection();
   if (!protection) return reply({ message: "Review submissions are temporarily unavailable." }, 503);
   if (!sameOrigin(request)) return reply({ message: "Please submit from the Singgah review page." }, 403);
+  const vendorAuth = await vendorClient();
+  const { data: { user: vendorUser } } = await vendorAuth.auth.getUser();
+  if (vendorUser && !vendorUser.is_anonymous) return reply({ message: "Sign out of your vendor account before leaving a customer review." }, 403);
   const bearer = request.headers.get("authorization");
   if (!bearer?.startsWith("Bearer ") || bearer.length > 8192) return reply({ message: "Please retry to restore your customer session." }, 401);
   // Bound the actual body, including requests that omit Content-Length.

@@ -24,14 +24,20 @@
     "reviews:configure": "node scripts/configure-review-key.mjs",
     "test:reviews": "node --conditions=react-server --test scripts/test-review-validation.ts scripts/test-review-protection.ts",
     "test:reviews-db": "node scripts/test-review-database.mjs",
-    "test:reviews-browser": "node scripts/test-review-browser.mjs"
+    "test:reviews-browser": "node scripts/test-review-browser.mjs",
+    "test:vendor-management": "node --test scripts/test-vendor-management.ts",
+    "test:vendor-management-db": "node scripts/test-vendor-management-db.mjs",
+    "test:vendor-storage": "node scripts/test-vendor-storage.mjs",
+    "test:vendor-management-browser": "node scripts/test-vendor-management-browser.mjs"
   },
   "dependencies": {
+    "@supabase/ssr": "^0.12.7",
     "@supabase/supabase-js": "^2.117.2",
     "next": "^16.3.6",
     "react": "^19.3.0",
     "react-dom": "^19.3.0",
-    "server-only": "^0.0.1"
+    "server-only": "^0.0.1",
+    "sharp": "^0.35.4"
   },
   "devDependencies": {
     "@tailwindcss/postcss": "^4.3.3",

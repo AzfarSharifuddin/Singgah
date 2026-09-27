@@ -5,6 +5,7 @@ import { ReviewForm } from "@/components/reviews/review-form";
 import { getPublicVendor } from "@/lib/vendors/profile";
 import { createServerSupabaseClient } from "@/lib/supabase/server";
 import { reviewProtection } from "@/lib/reviews/protection";
+import { vendorClient } from "@/lib/supabase/vendor";
 
 export const dynamic = "force-dynamic";
 export const metadata = { title: "Share your experience | Singgah", robots: { index: false, follow: true } };
@@ -12,6 +13,9 @@ export const metadata = { title: "Share your experience | Singgah", robots: { in
 export default async function ReviewPage({ params }: { params: Promise<{ slug: string }> }) {
   const vendor = await getPublicVendor((await params).slug);
   if (!vendor) notFound();
+  const auth = await vendorClient();
+  const { data: { user: vendorUser } } = await auth.auth.getUser();
+  if (vendorUser && !vendorUser.is_anonymous) return <PublicShell><main id="main" className="mx-auto max-w-2xl px-5 py-12"><h1 className="font-serif text-3xl">You’re signed in as a vendor.</h1><p className="my-5 leading-7">Customer reviews use a separate anonymous session. Sign out of your vendor account before leaving a customer review. Your existing customer session will be kept.</p><Link href="/dashboard" className="inline-flex min-h-12 items-center rounded-xl bg-hutan px-5 text-white">Go to dashboard</Link></main></PublicShell>;
   const { data: products, error } = await createServerSupabaseClient().from("products").select("id,name").eq("vendor_id", vendor.id).eq("is_active", true).order("display_order").order("id");
   if (error) throw new Error("Unable to load review products.");
   const protection = reviewProtection();

@@ -286,3 +286,15 @@ ESLint is pinned to 9.39.5 because the React plugin supplied by the current
 Next.js ESLint config fails under ESLint 10. npm marks ESLint 9 deprecated;
 upgrade when the Next.js lint plugin chain supports ESLint 10. No lint rules
 are disabled to hide this incompatibility.
+
+## Vendor management (Sprint 5)
+
+Vendor routes are `/vendor/register`, `/vendor/login` and the protected `/dashboard` with onboarding, profile, products and photos. Email/password auth uses a separate HttpOnly vendor cookie, preserving the anonymous review session. Registered accounts require email confirmation; database ownership permits one business per account. New businesses await manual approval.
+
+The private `vendor-media` bucket now supports real logo, cover, gallery and product uploads. Owner-only Storage policies, decoded image validation, WebP resizing and replacement cleanup protect the media lifecycle. Public profiles reuse the existing signed-media rendering. Products can be created, edited and deactivated; owners cannot change review moderation or publication status.
+
+See [vendor architecture, setup, security and tests](docs/vendor-management.md) for details. Supabase redirect URLs and email delivery are account configuration. The current live-registration test is blocked by `over_email_send_rate_limit`; confirmed-account dashboard testing does not replace the outstanding email-confirmation check.
+
+New checks: `npm run test:vendor-management`, `npm run test:vendor-management-db`, `npm run test:vendor-storage` and `npm run test:vendor-management-browser`. Read the test-account/cleanup notes before running hosted suites. The new migration is `20260927000100_vendor_management.sql`; applied history is unchanged. Supabase SSR and sharp are the only added application dependencies.
+
+Earlier sprint sections describe their original scope; Sprint 5 supersedes the earlier statements that Storage and vendor writes are not yet implemented.

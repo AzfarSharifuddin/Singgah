@@ -200,6 +200,10 @@ export type Database = {
       };
     };
     Functions: {
+      current_vendor_id: { Args: Record<string, never>; Returns: string | null };
+      create_vendor_business: { Args: { p_profile: Record<string, string | null> }; Returns: string };
+      attach_vendor_image: { Args: { p_path: string; p_kind: string; p_product?: string | null; p_alt?: string | null }; Returns: string | null };
+      detach_vendor_image: { Args: { p_image: string }; Returns: string };
       has_reviewed_vendor: { Args: { p_vendor_id: string }; Returns: boolean };
       submit_customer_review: { Args: { p_payload: string; p_signature: string }; Returns: string };
     };
