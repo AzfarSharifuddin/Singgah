@@ -8,7 +8,7 @@ try {
   const page = await browser.newPage();
   const errors = [];
   page.on("pageerror", (error) => errors.push(error.message));
-  page.on("console", (message) => { if (message.type() === "error") errors.push(message.text()); });
+  page.on("console", (message) => { if (message.type() === "error") errors.push(`${message.text()} (${message.location().url})`); });
   const visit = async (path) => { await page.goto(base + path, { waitUntil: "networkidle" }); };
   const count = async (expected) => {
     await page.waitForFunction((value) => document.querySelectorAll('[data-testid="vendor-results"] article').length === value, expected);
@@ -35,7 +35,7 @@ try {
     }
     await page.getByLabel("Category", { exact: true }).selectOption("food-beverage");
     await page.getByLabel("Subcategory", { exact: true }).selectOption("dessert");
-    await page.getByLabel("State", { exact: true }).selectOption("johor");
+    await page.getByLabel("State / Federal territory", { exact: true }).selectOption("johor");
     await page.getByLabel("City / District", { exact: true }).selectOption("johor-bahru");
     await page.getByLabel("Area / Locality", { exact: true }).selectOption("taman-mount-austin");
     await page.getByRole("button", { name: "Apply filters" }).click();
@@ -69,7 +69,7 @@ try {
   await visit("/discover?category=food-beverage&subcategory=dessert&state=johor&city=johor-bahru&area=taman-mount-austin");
   await page.getByLabel("Category", { exact: true }).selectOption("fashion-attire");
   assert.equal(await page.getByLabel("Subcategory", { exact: true }).inputValue(), "");
-  await page.getByLabel("State", { exact: true }).selectOption("selangor");
+  await page.getByLabel("State / Federal territory", { exact: true }).selectOption("selangor");
   assert.equal(await page.getByLabel("City / District", { exact: true }).inputValue(), "");
   assert.equal(await page.getByLabel("Area / Locality", { exact: true }).inputValue(), "");
   assert.deepEqual(errors, []);

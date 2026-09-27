@@ -1,3 +1,4 @@
+import Link from "next/link";
 import type { Metadata } from "next";
 import { PublicShell } from "@/components/discovery/public-shell";
 import { REVIEW_TERMS_VERSION } from "@/lib/reviews/terms";
@@ -13,6 +14,8 @@ const sections = [
   ["Purchases and external links", "Singgah does not currently take orders or payments. Purchases and arrangements are made directly with vendors. Reviews represent customer opinions, not endorsements or verified visits. Third-party websites and contact services have their own terms. Nothing in these terms removes rights that cannot lawfully be excluded."],
   ["Service and terms updates", "Features may change or be temporarily unavailable as Singgah develops. Updated terms will be published on this page with a new version date. New review submissions must accept the terms applicable at submission; previous acceptance records are not rewritten."],
 ];
-export default function TermsPage() {
-  return <PublicShell><main id="main" className="mx-auto max-w-3xl px-5 py-12 sm:px-8"><h1 className="font-serif text-4xl">Terms and conditions</h1><p className="mt-4 text-sm text-[#5d665f]">Version {REVIEW_TERMS_VERSION} · Updated 27 September 2026</p><p className="mt-6 leading-7">Help keep Singgah useful, fair and welcoming for local businesses and the people who discover them.</p><div className="mt-6 space-y-8">{sections.map(([heading, text], index) => <section key={heading}><h2 className="text-xl font-semibold">{index + 1}. {heading}</h2><p className="mt-3 leading-7 text-[#46534a]">{text}</p></section>)}</div></main></PublicShell>;
+export default async function TermsPage({ searchParams }: { searchParams: Promise<{ review?: string | string[] }> }) {
+  const value = (await searchParams).review;
+  const reviewSlug = typeof value === "string" && value.length <= 180 && /^[a-z0-9]+(?:-[a-z0-9]+)*$/.test(value) ? value : null;
+  return <PublicShell><main id="main" className="mx-auto max-w-3xl px-5 py-12 sm:px-8"><Link href={reviewSlug ? `/vendor/${reviewSlug}/review` : "/"} className="mb-6 inline-flex min-h-11 items-center text-sm underline underline-offset-4">← {reviewSlug ? "Back to your review" : "Back to Singgah"}</Link><h1 className="font-serif text-4xl">Terms and conditions</h1><p className="mt-4 text-sm text-[#5d665f]">Version {REVIEW_TERMS_VERSION} · Updated 27 September 2026</p><p className="mt-6 leading-7">Help keep Singgah useful, fair and welcoming for local businesses and the people who discover them.</p><div className="mt-6 space-y-8">{sections.map(([heading, text], index) => <section key={heading}><h2 className="text-xl font-semibold">{index + 1}. {heading}</h2><p className="mt-3 leading-7 text-[#46534a]">{text}</p></section>)}</div></main></PublicShell>;
 }

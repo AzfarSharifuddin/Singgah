@@ -41,7 +41,7 @@ try {
     await page.getByLabel("Description (optional)",{exact:true}).fill("A controlled temporary vendor for full dashboard verification.");
     await page.getByLabel("Category",{exact:true}).selectOption({label:"Food & Beverage"});
     await page.getByLabel("Subcategory (optional)",{exact:true}).selectOption({label:"Dessert"});
-    await page.getByLabel("State",{exact:true}).selectOption({label:"Johor"});
+    await page.getByLabel("State / Federal territory",{exact:true}).selectOption({label:"Johor"});
     await page.getByLabel("City / district",{exact:true}).selectOption({label:"Johor Bahru"});
     await page.getByLabel("Area / locality (optional)",{exact:true}).selectOption({label:"Taman Mount Austin"});
     await page.getByLabel("Phone",{exact:true}).fill("0123456789");

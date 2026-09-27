@@ -54,7 +54,7 @@ try {
         if (result.user?.id) { users.add(result.user.id); record(); }
       }
     });
-    const response = await page.goto(`${base}/vendor/aisyah-dessert/review`, { waitUntil: "networkidle" });
+    const response = await page.goto(`${base}/vendor/aisyah-dessert/review`, { waitUntil: "domcontentloaded" });
     assert.equal(response.status(), 200);
     await page.getByRole("button", { name: "Submit Review", exact: true }).waitFor();
     assert.equal(await identity(page), null, "Reading the review page must not create an account");
@@ -70,7 +70,7 @@ try {
     for (const slug of ["missing-review-vendor", "draft-demo-stall"]) {
       assert.equal((await page.goto(`${base}/vendor/${slug}/review`)).status(), 404);
     }
-    await page.goto(`${base}/vendor/${fixtureSlug}/review`, { waitUntil: "networkidle" });
+    await page.goto(`${base}/vendor/${fixtureSlug}/review`, { waitUntil: "domcontentloaded" });
     assert.equal(await page.getByRole("heading", { name: "What did you try?" }).count(), 0);
     await context.close();
   }
@@ -91,7 +91,7 @@ try {
       }
     });
     const slug = scenario === "G" ? fixtureSlug : "aisyah-dessert";
-    await page.goto(`${base}/vendor/${slug}/review`, { waitUntil: "networkidle" });
+    await page.goto(`${base}/vendor/${slug}/review`, { waitUntil: "domcontentloaded" });
     const submit = page.getByRole("button", { name: "Submit Review", exact: true });
     await page.waitForFunction(() => !document.querySelector('button[type="submit"],form > button')?.disabled);
     await submit.click();
@@ -128,7 +128,7 @@ try {
       assert.ok((await cheesecake.innerText()).includes(`${((Number(initialProduct.average_rating) * Number(initialProduct.rating_count) + count * 4) / (Number(initialProduct.rating_count) + count)).toFixed(1)} · ${Number(initialProduct.rating_count) + count} ${Number(initialProduct.rating_count) + count === 1 ? "rating" : "ratings"}`), "Product average and count update in the rendered profile");
     }
     assert.equal(await identity(page), user, "Identity persists on vendor navigation");
-    await page.reload({ waitUntil: "networkidle" });
+    await page.reload({ waitUntil: "domcontentloaded" });
     assert.equal(await identity(page), user, "Identity persists on reload");
     await page.getByRole("link", { name: "Leave a Review" }).click();
     await page.getByRole("heading", { name: "You’ve already reviewed this vendor." }).waitFor();

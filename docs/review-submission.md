@@ -168,3 +168,11 @@ New submissions require an explicit termsAccepted=true in application validation
 /vendor/[slug]?reviewSort=newest|highest|lowest&reviews=2 sorts published reviews in PostgreSQL before pagination. Rating sorts break ties by newest timestamp, then ID. Default/invalid sort is newest. Applying a different sort resets the review page.
 
 The initial /terms wording needs owner/legal review before public launch. Add the actual operator identity, support/data-rights contact and a separate privacy notice once these are supplied; do not invent contact details or treat the checkbox as blanket privacy consent. Malaysian privacy notice guidance: https://www.pdp.gov.my/ppdpv1/en/akta/guidance-on-the-preparation-of-personal-data-protection-notices/ . Email registration testing remains paused at the owner's request.
+
+## Review UX corrections
+
+Terms links use the same tab and carry a validated vendor slug for the return arrow. Rating/text/product selections are saved in sessionStorage only when opening terms and restored once, within 30 minutes; terms acceptance remains unchecked. No draft is written to the server.
+
+Turnstile now starts on widget render while the customer fills the form. Tokens are kept only in memory and consumed once, with a four-minute freshness window; a second token is still required after anonymous signup because tokens are single-use. Each challenge wait is capped at 30 seconds (previously 90), retries are explicit, and errors identify the failing security stage/code. Returning customers are checked for an existing review before requesting another token. Server CAPTCHA validation and the one-review constraint are unchanged. Development still uses official Cloudflare test keys; real production keys remain required. Cloudflare/browser/network failures cannot be guaranteed away; if an embedded browser repeatedly fails, try a supported standalone browser. See https://developers.cloudflare.com/turnstile/troubleshooting/client-side-errors/error-codes/ .
+
+Location UI uses State / Federal territory. Putrajaya remains its own federal territory; no geographic data migration was made.
