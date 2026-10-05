@@ -75,5 +75,21 @@ using existing Dev taxonomy; it requires migrated Singgah Dev credentials. Do no
 claim SQL parsing proves RLS behavior. Verify login, unauthorized access, invitation
 acceptance and desktop/mobile dashboard behavior against the hosted database.
 
-Live migration, admin creation, SMTP configuration, delivered invitation and
-authenticated browser flows are unverified until account access is available.
+On 5 October 2026, the admin migration was applied to Singgah Dev
+(`yclwktzpthezflzhoeuk`) through Supabase MCP and recorded in
+`private.singgah_migrations` with the source checksum. Hosted rollback-only SQL
+checks passed for non-admin, anonymous and unconfirmed identities, private-table
+access, approval/rejection, stale decisions, public visibility, audit records and
+membership revocation. All synthetic test identities and vendors were rolled back.
+
+The intended invitation email has no Auth account yet. Admin creation, SMTP,
+delivered invitation and authenticated browser flows remain pending. Custom SMTP
+is disabled; the dashboard requires it before editing email templates. Vercel
+account access and domain deployment are also pending.
+
+Supabase advisors were reviewed. The admin RPCs intentionally use SECURITY DEFINER
+with explicit membership checks and restricted execution grants; these generated
+the expected signed-in function warnings. Existing anonymous-access policy and
+password-protection warnings remain. The new audit actor foreign key has an
+informational missing-index notice; this does not block the tested moderation
+flows. This review is not a claim that the whole project is free of advisor notices.
