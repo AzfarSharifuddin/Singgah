@@ -1,7 +1,7 @@
 # singgah.cc deployment
 
 Target: Vercel hosting with Cloudflare DNS. The repository is
-`wanpenter/Singgah`. This document records setup requirements; it does not confirm
+`AzfarSharifuddin/Singgah`. This document records setup requirements; it does not confirm
 that deployment, DNS, SMTP, or invitations have been completed.
 
 ## Vercel
