@@ -202,6 +202,9 @@ export type Database = {
       };
     };
     Functions: {
+      is_singgah_admin: { Args: Record<string, never>; Returns: boolean };
+      admin_vendor_list: { Args: { p_status?: string; p_search?: string; p_page?: number }; Returns: { vendors: { id: string; name: string; slug: string; description: string | null; status: string; is_active: boolean; created_at: string; category: string; state: string; city: string; last_reason: string | null }[]; total: number; page: number; pages: number } };
+      admin_moderate_vendor: { Args: { p_id: string; p_decision: string; p_expected_status: string; p_reason?: string }; Returns: undefined };
       current_vendor_id: { Args: Record<string, never>; Returns: string | null };
       create_vendor_business: { Args: { p_profile: Record<string, string | null> }; Returns: string };
       attach_vendor_image: { Args: { p_path: string; p_kind: string; p_product?: string | null; p_alt?: string | null }; Returns: string | null };

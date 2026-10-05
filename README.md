@@ -1,5 +1,14 @@
 # Singgah
 
+## Deployment and admin setup
+
+The target domain is **singgah.cc**, hosted on Vercel with Cloudflare DNS.
+See [deployment prerequisites and verification](docs/deployment.md) and
+[admin accounts, invitations and vendor moderation](docs/admin-management.md).
+The admin dashboard is `/admin`; its database migration and membership must be
+provisioned before use. Live hosting, DNS, SMTP and invitation delivery require
+account configuration and are not implied by the code being present.
+
 Stories Make Places Brighter.
 
 Next.js App Router, TypeScript, Tailwind CSS, ESLint and the Sprint 1 Supabase foundation.

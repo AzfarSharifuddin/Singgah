@@ -10,6 +10,7 @@ export const metadata: Metadata = {
   title: "Singgah — Stories Make Places Brighter",
   description: "Discover local vendors and small businesses around Malaysia. Find your next local favourite with Singgah.",
   robots: { index: true, follow: true },
+  alternates: { canonical: "/" },
   openGraph: { title: "Singgah — Stories Make Places Brighter", description: "Find the small businesses that make Malaysia special.", type: "website", locale: "en_MY", siteName: "Singgah" },
 };
 
