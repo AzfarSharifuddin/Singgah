@@ -6,14 +6,6 @@ import { useEffect, useId, useRef, useState } from "react";
 import { createBrowserSupabaseClient } from "@/lib/supabase/client";
 import { parseReview, REVIEW_TEXT_LIMIT } from "@/lib/reviews/validation";
 
-type Turnstile = {
-  render: (element: HTMLElement, options: Record<string, unknown>) => string;
-  execute: (id: string) => void;
-  reset: (id: string) => void;
-  remove: (id: string) => void;
-};
-declare global { interface Window { turnstile?: Turnstile } }
-
 function Stars({ label, value, onChange, disabled }: { label: string; value: number; onChange: (value: number) => void; disabled: boolean }) {
   const name = useId();
   return <fieldset disabled={disabled}><legend className="text-sm font-semibold">{label}</legend><div className="mt-2 flex gap-1">{[1, 2, 3, 4, 5].map((star) => <label key={star} className="relative flex size-12 cursor-pointer items-center justify-center rounded-lg border border-hutan/15 has-focus-visible:outline-2 has-focus-visible:outline-offset-2 has-focus-visible:outline-hutan"><input className="sr-only" type="radio" name={name} value={star} checked={value === star} onChange={() => onChange(star)} aria-label={`${star} ${star === 1 ? "star" : "stars"}`} /><span aria-hidden="true" className={`text-3xl ${star <= value ? "text-[#86513a]" : "text-[#727b73]"}`}>{star <= value ? "★" : "☆"}</span></label>)}</div></fieldset>;

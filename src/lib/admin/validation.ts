@@ -1,4 +1,31 @@
 export const vendorStatuses = ["all", "pending", "published", "suspended", "draft", "archived"] as const;
+
+const captchaToken = (form: FormData) => {
+  const token = String(form.get("captcha_token") || "");
+  if (!token || token.length > 4096) throw new Error("Complete the security check and try again.");
+  return token;
+};
+
+export function adminLoginInput(form: FormData) {
+  const email = String(form.get("email") || "").trim();
+  const password = String(form.get("password") || "");
+  if (!email || email.length > 254 || !email.includes("@") || !password || password.length > 128) throw new Error("Check your email and password.");
+  return { email, password, captchaToken: captchaToken(form) };
+}
+
+export function adminRecoveryInput(form: FormData) {
+  const email = String(form.get("email") || "").trim();
+  const token = captchaToken(form);
+  return { email: email && email.length <= 254 && email.includes("@") ? email : null, captchaToken: token };
+}
+
+export function adminPasswordInput(form: FormData) {
+  const password = String(form.get("password") || "");
+  if (password.length < 12 || password.length > 128) throw new Error("Use a password between 12 and 128 characters.");
+  if (password !== String(form.get("confirm_password") || "")) throw new Error("The passwords do not match.");
+  return password;
+}
+
 export function moderationInput(form: FormData) {
   const id = String(form.get("id") || "");
   const decision = String(form.get("decision") || "");
