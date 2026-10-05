@@ -29,8 +29,36 @@ the **Invite user** email link to:
 This uses server-side `verifyOtp` with invitation tokens; the default fragment
 token redirect cannot be read by a server handler. Links must not be logged,
 shared, or committed. The recipient opens the invitation and chooses their own
-password at `/admin/password`. An invitation confirms identity but does not grant
-admin membership by itself.
+password at `/admin/password`. Saving the password signs the admin out and sends
+them to `/admin/login` to sign in with the new password. An invitation confirms
+identity but does not grant admin membership by itself.
+
+Existing admins who have not set a password can use **Set or forgot your
+password?** at `/admin/login`. The request uses Turnstile and always shows the
+same response so it cannot disclose which emails have Auth accounts or admin
+access. It calls `resetPasswordForEmail` with this exact redirect destination:
+
+```text
+https://singgah.cc/admin/recovery
+```
+
+Add that URL to Supabase Auth's allowed redirect URLs. Because the Recovery
+template is shared with other account flows, use the admin token-hash link only
+when `.RedirectTo` equals the URL above; preserve `.ConfirmationURL` otherwise:
+
+```html
+{{ if eq .RedirectTo "https://singgah.cc/admin/recovery" }}
+  <a href="{{ .SiteURL }}/admin/recovery?token_hash={{ .TokenHash }}&type=recovery">Reset your Singgah admin password</a>
+{{ else }}
+  <a href="{{ .ConfirmationURL }}">Reset your password</a>
+{{ end }}
+```
+
+`/admin/recovery` verifies the recovery token and private admin membership before
+opening `/admin/password`; invalid, expired, non-admin and anonymous sessions are
+signed out. Password login and reset requests both submit a fresh Turnstile token
+to Supabase Auth. Keep Auth CAPTCHA enabled and configure
+`NEXT_PUBLIC_TURNSTILE_SITE_KEY` in production.
 
 Send the authorized invitation to `azfarrsharifuddin@gmail.com` using the Supabase
 Auth dashboard. After the Auth account exists, provision only that account through

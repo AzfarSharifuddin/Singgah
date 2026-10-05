@@ -3,15 +3,16 @@ import { redirect } from "next/navigation";
 import { revalidatePath } from "next/cache";
 import { vendorClient } from "@/lib/supabase/vendor";
 import { adminSession } from "./session";
-import { moderationInput } from "./validation";
+import { adminLoginInput, adminPasswordInput, adminRecoveryInput, moderationInput } from "./validation";
 import type { ActionResult } from "@/lib/vendor-management/actions";
 
+const ADMIN_RECOVERY_REDIRECT = "https://singgah.cc/admin/recovery";
+
 export async function adminLogin(_previous: ActionResult, form: FormData): Promise<ActionResult> {
-  const email = String(form.get("email") || "").trim();
-  const password = String(form.get("password") || "");
-  if (!email || email.length > 254 || !password || password.length > 128) return { message: "Check your email and password." };
+  let input;
+  try { input = adminLoginInput(form); } catch (error) { return { message: error instanceof Error ? error.message : "Check your email and password." }; }
   const client = await vendorClient();
-  const { data, error } = await client.auth.signInWithPassword({ email, password });
+  const { data, error } = await client.auth.signInWithPassword({ email: input.email, password: input.password, options: { captchaToken: input.captchaToken } });
   if (error || !data.user || data.user.is_anonymous || !data.user.email_confirmed_at) return { message: "Unable to sign in. Check your credentials and confirm your email." };
   const permission = await client.rpc("is_singgah_admin");
   if (permission.error || !permission.data) {
@@ -37,10 +38,22 @@ export async function moderateVendor(_previous: ActionResult, form: FormData): P
 }
 export async function setAdminPassword(_previous: ActionResult, form: FormData): Promise<ActionResult> {
   const { client } = await adminSession();
-  const password = String(form.get("password") || "");
-  if (password.length < 12 || password.length > 128) return { message: "Use a password between 12 and 128 characters." };
-  if (password !== String(form.get("confirm_password") || "")) return { message: "The passwords do not match." };
+  let password;
+  try { password = adminPasswordInput(form); } catch (error) { return { message: error instanceof Error ? error.message : "Check your password." }; }
   const { error } = await client.auth.updateUser({ password });
   if (error) return { message: "Password could not be saved. Retry, or request a fresh invitation." };
-  redirect("/admin");
+  const { error: signOutError } = await client.auth.signOut({ scope: "local" });
+  if (signOutError) return { ok: true, message: "Password saved, but automatic sign out failed. Use the sign out button, then sign in with your new password." };
+  redirect("/admin/login?password=updated");
+}
+
+export async function requestAdminPasswordReset(_previous: ActionResult, form: FormData): Promise<ActionResult> {
+  let input;
+  try { input = adminRecoveryInput(form); } catch (error) { return { message: error instanceof Error ? error.message : "Complete the security check and try again." }; }
+  if (input.email) {
+    const client = await vendorClient();
+    // Keep the response identical so callers cannot discover Auth accounts or admin membership.
+    await client.auth.resetPasswordForEmail(input.email, { redirectTo: ADMIN_RECOVERY_REDIRECT, captchaToken: input.captchaToken });
+  }
+  return { ok: true, message: "If this email belongs to a Singgah admin, a password setup link has been sent. Check the inbox and spam folder." };
 }
