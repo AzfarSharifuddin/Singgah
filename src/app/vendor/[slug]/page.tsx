@@ -22,7 +22,8 @@ export async function generateMetadata({ params }: Props): Promise<Metadata> {
   const description = (vendor.description?.trim() || `Meet ${vendor.name}, a ${vendor.subcategory?.name || vendor.category.name} vendor in ${locationSummary(place, vendor.state.name)}.`).replace(/\s+/g, " ").slice(0, 160);
   return {
     title, description, robots: { index: true, follow: true },
-    openGraph: { title, description, type: "website", siteName: "Singgah", locale: "en_MY" },
+    alternates: { canonical: `/vendor/${encodeURIComponent(vendor.slug)}` },
+    openGraph: { title, description, url: `/vendor/${encodeURIComponent(vendor.slug)}`, type: "website", siteName: "Singgah", locale: "en_MY" },
   };
 }
 

@@ -1,5 +1,9 @@
 # Vendor management — Sprint 5
 
+The new [admin management](admin-management.md) feature supersedes this sprint's
+statements that approval is available only through database tooling. Vendor
+ownership and customer session boundaries remain as described below.
+
 ## Routes and flow
 
 - `/vendor/register`: email/password account creation, minimum 12-character password.
