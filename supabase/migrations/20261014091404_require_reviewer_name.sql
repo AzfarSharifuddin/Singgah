@@ -1,12 +1,23 @@
 -- Keep historical reviews unchanged. Every new customer submission must carry a
 -- public name containing letters and spaces only.
-alter table public.reviews
-  add constraint reviews_reviewer_name_format check (
-    reviewer_name is null or (
-      char_length(reviewer_name) between 2 and 80
-      and reviewer_name ~ '^[[:alpha:]]+( [[:alpha:]]+)*$'
-    )
-  ) not valid;
+do $$
+begin
+  if not exists (
+    select 1
+    from pg_constraint
+    where conrelid = 'public.reviews'::regclass
+      and conname = 'reviews_reviewer_name_format'
+  ) then
+    alter table public.reviews
+      add constraint reviews_reviewer_name_format check (
+        reviewer_name is null or (
+          char_length(reviewer_name) between 2 and 80
+          and reviewer_name ~ '^[[:alpha:]]+( [[:alpha:]]+)*$'
+        )
+      ) not valid;
+  end if;
+end;
+$$;
 
 alter table public.reviews validate constraint reviews_reviewer_name_format;
 

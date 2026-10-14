@@ -32,7 +32,8 @@ select pg_temp.assert_true((select count(*) = 6 from public.categories), 'six ca
 select pg_temp.assert_true((select count(*) = 31 from public.subcategories), '31 subcategories');
 select pg_temp.assert_true((select count(*) = 16 from public.states), '13 states and three federal territories');
 select pg_temp.assert_true((select count(*) = 15 from public.products), '15 seed products');
-select pg_temp.assert_true((select count(*) = 10 from pg_class c join pg_namespace n on n.oid = c.relnamespace where n.nspname = 'public' and c.relrowsecurity and c.relname in ('states','cities','areas','categories','subcategories','vendors','products','vendor_images','reviews','product_ratings')), 'RLS enabled on every application table');
+select pg_temp.assert_true((select count(*) = 11 from pg_class c join pg_namespace n on n.oid = c.relnamespace where n.nspname = 'public' and c.relrowsecurity and c.relname in ('states','cities','areas','categories','subcategories','vendors','products','vendor_images','vendor_verification_images','reviews','product_ratings')), 'RLS enabled on every application table');
+select pg_temp.assert_true((select not public and file_size_limit=3145728 and allowed_mime_types=array['image/webp'] from storage.buckets where id='vendor-verification'), 'verification image bucket is private and restricted');
 
 select pg_temp.expect_error($q$insert into public.reviews(vendor_id,rating) values ('00000006-0000-4000-8000-000000000001',0)$q$, '23514');
 select pg_temp.expect_error($q$insert into public.reviews(vendor_id,rating) values ('00000006-0000-4000-8000-000000000001',6)$q$, '23514');
@@ -69,12 +70,14 @@ select pg_temp.assert_true((select average_rating=(select round(avg(rating),2) f
 select pg_temp.assert_true((select average_rating is null and review_count=0 from public.vendor_rating_summaries where vendor_id='00000006-0000-4000-8000-000000000004'), 'unreviewed vendor has null average');
 select pg_temp.expect_error('select customer_id from public.reviews', '42501');
 select pg_temp.expect_error('select owner_user_id from public.vendors', '42501');
+select pg_temp.expect_error('select storage_path from public.vendor_verification_images', '42501');
 select pg_temp.expect_error($q$insert into public.reviews(vendor_id,rating) values ('00000006-0000-4000-8000-000000000001',5)$q$, '42501');
 select pg_temp.expect_error($q$update public.vendors set status='published' where slug='draft-demo-stall'$q$, '42501');
 select pg_temp.expect_error('delete from public.products', '42501');
 reset role;
 set local role authenticated;
 select pg_temp.assert_true((select count(id)=5 from public.vendors), 'authenticated role has same read boundary');
+select pg_temp.assert_true((select count(*)=0 from public.vendor_verification_images), 'anonymous vendors cannot view other businesses’ proof photos');
 select pg_temp.expect_error('update public.reviews set verification_status=''verified''', '42501');
 select pg_temp.expect_error('select customer_id from public.reviews', '42501');
 reset role;

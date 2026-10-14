@@ -7,5 +7,7 @@ export default async function EditProduct({ params }: { params: Promise<{ id: st
   if (!/^[0-9a-f-]{36}$/i.test(productId)) notFound();
   const { data, error } = await client.from("products").select("id,name,description,price,is_active").eq("id", productId).eq("vendor_id", id).maybeSingle();
   if (error) throw new Error("Unable to load product."); if (!data) notFound();
-  return <><h1 className="mb-7 font-serif text-4xl">Edit product</h1><ProductForm action={saveProduct} initial={data} /></>;
+  const { data: image, error: imageError } = await client.from("vendor_images").select("id").eq("vendor_id", id).eq("product_id", productId).eq("image_type", "product").maybeSingle();
+  if (imageError) throw new Error("Unable to load product image.");
+  return <><h1 className="mb-7 font-serif text-4xl">Edit product</h1><ProductForm action={saveProduct} initial={data} hasImage={!!image} /></>;
 }

@@ -102,6 +102,14 @@ type vendor_imagesRow = {
   is_public: boolean;
 };
 
+type vendor_verification_imagesRow = {
+  id: string;
+  created_at: string;
+  vendor_id: string;
+  storage_path: string;
+  evidence_type: "storefront" | "signage" | "products" | "workspace" | "other";
+};
+
 type reviewsRow = {
   id: string;
   created_at: string;
@@ -178,6 +186,12 @@ export type Database = {
         Update: Partial<vendor_imagesRow>;
         Relationships: [{ foreignKeyName: "vendor_images_vendor_id_fkey"; columns: ["vendor_id"]; isOneToOne: false; referencedRelation: "vendors"; referencedColumns: ["id"] }, { foreignKeyName: "vendor_images_product_id_vendor_id_fkey"; columns: ["product_id","vendor_id"]; isOneToOne: false; referencedRelation: "products"; referencedColumns: ["id","vendor_id"] }];
       };
+      vendor_verification_images: {
+        Row: vendor_verification_imagesRow;
+        Insert: Partial<vendor_verification_imagesRow> & Pick<vendor_verification_imagesRow, "vendor_id" | "storage_path" | "evidence_type">;
+        Update: Partial<vendor_verification_imagesRow>;
+        Relationships: [{ foreignKeyName: "vendor_verification_images_vendor_id_fkey"; columns: ["vendor_id"]; isOneToOne: false; referencedRelation: "vendors"; referencedColumns: ["id"] }];
+      };
       reviews: {
         Row: reviewsRow;
         Insert: Partial<reviewsRow> & Pick<reviewsRow, "vendor_id" | "rating">;
@@ -209,6 +223,8 @@ export type Database = {
       create_vendor_business: { Args: { p_profile: Record<string, string | null> }; Returns: string };
       attach_vendor_image: { Args: { p_path: string; p_kind: string; p_product?: string | null; p_alt?: string | null }; Returns: string | null };
       detach_vendor_image: { Args: { p_image: string }; Returns: string };
+      attach_vendor_verification_image: { Args: { p_path: string; p_type: string }; Returns: string };
+      detach_vendor_verification_image: { Args: { p_image: string }; Returns: string };
       has_reviewed_vendor: { Args: { p_vendor_id: string }; Returns: boolean };
       submit_customer_review: { Args: { p_payload: string; p_signature: string }; Returns: string };
     };

@@ -1,18 +1,33 @@
 "use client";
 
-import { useActionState, useState } from "react";
+import { useActionState, useCallback, useEffect, useRef, useState } from "react";
 import type { ActionResult } from "@/lib/vendor-management/actions";
 import type { DiscoveryOptions } from "@/lib/vendors/discovery-params";
+import { Turnstile, type TurnstileInstance } from "@marsidev/react-turnstile";
 
 type Action = (state: ActionResult, form: FormData) => Promise<ActionResult>;
 const input = "mt-2 min-h-12 w-full rounded-xl border border-hutan/25 bg-white px-3 py-2 text-base";
-export function ActionForm({ action, children, label }: { action: Action; children: React.ReactNode; label: string }) {
+export function ActionForm({ action, children, label, onResult }: { action: Action; children: React.ReactNode; label: string; onResult?: () => void }) {
   const [state, submit, pending] = useActionState(action, { message: "" });
+  useEffect(() => {
+    if (state.message) onResult?.();
+  }, [state, onResult]);
   return <form action={submit} className="space-y-5" aria-busy={pending}><fieldset disabled={pending} className="min-w-0 space-y-5">{children}</fieldset>{state.message && <p role={state.ok ? "status" : "alert"} className="rounded-xl bg-rembulan/40 p-4 text-sm">{state.message}</p>}<button type="submit" disabled={pending} className="min-h-12 rounded-xl bg-hutan px-6 py-3 font-semibold text-white disabled:opacity-60">{pending ? "Please wait…" : label}</button></form>;
 }
 export function AuthForm({ action, registration }: { action: Action; registration: boolean }) {
   const [email, setEmail] = useState(""); const [password, setPassword] = useState("");
-  return <ActionForm action={action} label={registration ? "Create vendor account" : "Sign in"}><label className="block">Email<input required type="email" name="email" value={email} onChange={(event) => setEmail(event.target.value)} maxLength={254} autoComplete="email" className={input} /></label><label className="block">Password<input required type="password" name="password" value={password} onChange={(event) => setPassword(event.target.value)} minLength={registration ? 12 : undefined} maxLength={128} autoComplete={registration ? "new-password" : "current-password"} className={input} /></label>{registration && <p className="text-sm text-[#5d665f]">Use at least 12 characters. We’ll email you to confirm your account.</p>}</ActionForm>;
+  const turnstileRef = useRef<TurnstileInstance | null>(null);
+  const resetTurnstile = useCallback(() => turnstileRef.current?.reset(), []);
+  const turnstileSiteKey = process.env.NEXT_PUBLIC_TURNSTILE_SITE_KEY;
+
+  return <ActionForm action={action} label={registration ? "Create vendor account" : "Sign in"} onResult={resetTurnstile}>
+    <label className="block">Email<input required type="email" name="email" value={email} onChange={(event) => setEmail(event.target.value)} maxLength={254} autoComplete="email" className={input} /></label>
+    <label className="block">Password<input required type="password" name="password" value={password} onChange={(event) => setPassword(event.target.value)} minLength={registration ? 12 : undefined} maxLength={128} autoComplete={registration ? "new-password" : "current-password"} className={input} /></label>
+    {turnstileSiteKey
+      ? <Turnstile ref={turnstileRef} siteKey={turnstileSiteKey} />
+      : <p role="alert" className="rounded-xl bg-rembulan/40 p-4 text-sm">Turnstile is not configured. Add NEXT_PUBLIC_TURNSTILE_SITE_KEY to .env.local and restart the dev server.</p>}
+    {registration && <p className="text-sm text-[#5d665f]">Use at least 12 characters. We’ll email you to confirm your account.</p>}
+  </ActionForm>;
 }
 export function ProfileForm({ options, initial = {}, action, onboarding = false }: { options: DiscoveryOptions; initial?: Record<string, string | null>; action: Action; onboarding?: boolean }) {
   const [values, setValues] = useState(initial);
@@ -26,10 +41,27 @@ export function ProfileForm({ options, initial = {}, action, onboarding = false 
     {onboarding && <p className="rounded-xl bg-rembulan/30 p-4 text-sm leading-6">Next: add optional logo and cover photos. Your completed profile will await approval before appearing publicly.</p>}
   </ActionForm>;
 }
-export function ProductForm({ action, initial = {} }: { action: Action; initial?: { id?: string; name?: string; description?: string | null; price?: number | null; is_active?: boolean } }) {
+export function ProductForm({ action, initial = {}, hasImage = false }: { action: Action; initial?: { id?: string; name?: string; description?: string | null; price?: number | null; is_active?: boolean }; hasImage?: boolean }) {
   const [name, setName] = useState(initial.name || ""); const [description, setDescription] = useState(initial.description || ""); const [price, setPrice] = useState(initial.price?.toString() || ""); const [active, setActive] = useState(initial.is_active ?? true);
-  return <ActionForm action={action} label="Save product"><input type="hidden" name="id" value={initial.id || ""} /><label className="block">Product name<input name="name" value={name} onChange={(event) => setName(event.target.value)} required maxLength={160} className={input} /></label><label className="block">Description (optional)<textarea name="description" value={description} onChange={(event) => setDescription(event.target.value)} rows={3} maxLength={3000} className={input} /></label><label className="block">Price in MYR (optional)<input name="price" value={price} onChange={(event) => setPrice(event.target.value)} type="number" step="0.01" min="0" max="9999999999.99" className={input} /></label><label className="flex min-h-12 items-center gap-3"><input name="is_active" type="checkbox" checked={active} onChange={(event) => setActive(event.target.checked)} className="size-5" />Active product</label><p className="text-sm text-[#5d665f]">Save first, then add an optional image from the products page.</p></ActionForm>;
+  return <ActionForm action={action} label="Save product"><input type="hidden" name="id" value={initial.id || ""} /><label className="block">Product name<input name="name" value={name} onChange={(event) => setName(event.target.value)} required maxLength={160} className={input} /></label><label className="block">Description (optional)<textarea name="description" value={description} onChange={(event) => setDescription(event.target.value)} rows={3} maxLength={3000} className={input} /></label><label className="block">Price in MYR (optional)<input name="price" value={price} onChange={(event) => setPrice(event.target.value)} type="number" step="0.01" min="0" max="9999999999.99" className={input} /></label><label className="block">Product image{hasImage ? " (optional replacement)" : ""}<input type="file" name="file" accept="image/jpeg,image/png,image/webp" required={!hasImage} className={`${input} file:mr-3 file:rounded-lg file:border-0 file:bg-rembulan file:px-3 file:py-2`} /></label><p className="text-sm leading-6 text-[#5d665f]">{hasImage ? "Your current image will be kept unless you choose a replacement. " : "One image is required for every product. "}JPEG, PNG or WebP, up to 3 MB. Images are resized and compressed to WebP.</p><label className="flex min-h-12 items-center gap-3"><input name="is_active" type="checkbox" checked={active} onChange={(event) => setActive(event.target.checked)} className="size-5" />Active product</label></ActionForm>;
 }
 export function ImageForm({ action, kind, productId }: { action: Action; kind: string; productId?: string }) {
   return <ActionForm action={action} label="Upload image"><input type="hidden" name="kind" value={kind} /><input type="hidden" name="product_id" value={productId || ""} /><label className="block">Image file<input type="file" name="file" accept="image/jpeg,image/png,image/webp" required className={`${input} file:mr-3 file:rounded-lg file:border-0 file:bg-rembulan file:px-3 file:py-2`} /></label><p className="text-xs leading-5 text-[#5d665f]">JPEG, PNG or WebP, up to 3 MB. Images are resized and converted to WebP. Uploading replaces the current image, except in the gallery.</p><label className="block">Image description (optional)<input name="alt" maxLength={500} className={input} /></label></ActionForm>;
+}
+
+export function ProofImageForm({ action }: { action: Action }) {
+  return <ActionForm action={action} label="Upload proof photo">
+    <label className="block">What does this photo show?
+      <select name="evidence_type" required defaultValue="" className={input}>
+        <option value="" disabled>Choose a type</option>
+        <option value="storefront">Storefront or stall</option>
+        <option value="signage">Business sign or name</option>
+        <option value="products">Products or work</option>
+        <option value="workspace">Workspace</option>
+        <option value="other">Other business evidence</option>
+      </select>
+    </label>
+    <label className="block">Photo<input type="file" name="file" accept="image/jpeg,image/png,image/webp" required className={`${input} file:mr-3 file:rounded-lg file:border-0 file:bg-rembulan file:px-3 file:py-2`} /></label>
+    <p className="text-sm leading-6 text-[#5d665f]">JPEG, PNG or WebP, up to 3 MB each. Up to five photos. These stay private for you and Singgah’s admins; they are never shown on your public profile. Avoid photos containing identity cards, bank details or other personal information.</p>
+  </ActionForm>;
 }

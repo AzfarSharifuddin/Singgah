@@ -6,6 +6,7 @@ import { revalidatePath } from "next/cache";
 import { requireBusiness } from "@/lib/supabase/vendor";
 import type { ActionResult } from "./actions";
 import { field, identifier } from "./validation";
+import { compressVendorImage } from "./image-compression";
 
 export async function uploadImage(_previous: ActionResult, form: FormData): Promise<ActionResult> {
   const { client, id } = await requireBusiness();
@@ -25,8 +26,7 @@ export async function uploadImage(_previous: ActionResult, form: FormData): Prom
     const image = sharp(Buffer.from(await file.arrayBuffer()), { limitInputPixels: 20000000 });
     const metadata = await image.metadata();
     if (metadata.format !== formats[file.type] || (metadata.pages || 1) > 1) return { message: "Use a valid, non-animated JPEG, PNG or WebP image." };
-    const size = kind === "logo" ? 512 : 2048;
-    bytes = await image.rotate().resize({ width: size, height: size, fit: "inside", withoutEnlargement: true }).webp({ quality: 82 }).toBuffer();
+    bytes = await compressVendorImage(Buffer.from(await file.arrayBuffer()), kind === "logo" ? 512 : 1600);
     if (bytes.byteLength > 3 * 1024 * 1024) return { message: "The image is still too large. Please choose a smaller file." };
   } catch { return { message: "This image couldn’t be read. Try a smaller valid JPEG, PNG or WebP." }; }
   const path = `vendors/${id}/${kind === "product" ? `products/${productId}` : kind}/${randomUUID()}.webp`;
@@ -41,10 +41,59 @@ export async function uploadImage(_previous: ActionResult, form: FormData): Prom
   revalidatePath("/dashboard", "layout"); revalidatePath("/vendor/[slug]", "page");
   return { ok: true, message: removed?.error ? "Image saved. Use Clean unused uploads later to remove the old file." : "Image uploaded and saved." };
 }
-export async function removeImage(_previous: ActionResult, form: FormData): Promise<ActionResult> {
+
+export async function uploadProofImage(_previous: ActionResult, form: FormData): Promise<ActionResult> {
+  const { client, id } = await requireBusiness();
+  let evidenceType: string;
+  try { evidenceType = field(form, "evidence_type", 20, true)!; } catch { return { message: "Choose what the photo shows." }; }
+  if (!["storefront", "signage", "products", "workspace", "other"].includes(evidenceType)) return { message: "Choose a valid evidence type." };
+
+  const file = form.get("file");
+  if (!(file instanceof File) || !file.size || file.size > 3 * 1024 * 1024) return { message: "Choose an image no larger than 3 MB." };
+  const formats: Record<string, string> = { "image/jpeg": "jpeg", "image/png": "png", "image/webp": "webp" };
+  if (!formats[file.type]) return { message: "Use a JPEG, PNG or WebP image." };
+
+  let bytes: Buffer;
+  try {
+    const image = sharp(Buffer.from(await file.arrayBuffer()), { limitInputPixels: 20000000 });
+    const metadata = await image.metadata();
+    if (metadata.format !== formats[file.type] || (metadata.pages || 1) > 1) return { message: "Use a valid, non-animated JPEG, PNG or WebP image." };
+    bytes = await compressVendorImage(Buffer.from(await file.arrayBuffer()));
+    if (bytes.byteLength > 3 * 1024 * 1024) return { message: "The image is still too large. Please choose a smaller file." };
+  } catch { return { message: "This image couldn’t be read. Try a smaller valid JPEG, PNG or WebP." }; }
+
+  const path = `vendors/${id}/${randomUUID()}.webp`;
+  const uploaded = await client.storage.from("vendor-verification").upload(path, bytes, { contentType: "image/webp", upsert: false });
+  if (uploaded.error) return { message: "Upload failed. Please try again." };
+  const attached = await client.rpc("attach_vendor_verification_image", { p_path: path, p_type: evidenceType });
+  if (attached.error) {
+    await client.storage.from("vendor-verification").remove([path]);
+    return { message: attached.error.message === "verification_image_limit" ? "You can add up to five proof photos." : "The photo could not be saved. Please retry." };
+  }
+  revalidatePath("/dashboard/photos");
+  revalidatePath("/admin");
+  return { ok: true, message: "Private proof photo uploaded." };
+}
+
+export async function removeProofImage(_previous: ActionResult, form: FormData): Promise<ActionResult> {
   const { client } = await requireBusiness();
+  let imageId: string | null;
+  try { imageId = identifier(form, "image_id"); } catch { return { message: "Choose a valid image." }; }
+  const detached = await client.rpc("detach_vendor_verification_image", { p_image: imageId! });
+  if (detached.error) return { message: "This proof photo could not be removed." };
+  const removed = await client.storage.from("vendor-verification").remove([detached.data]);
+  revalidatePath("/dashboard/photos");
+  revalidatePath("/admin");
+  return { ok: true, message: removed.error ? "Photo removed from your proof list, but its stored file could not be deleted. Please contact Singgah." : "Proof photo removed." };
+}
+
+export async function removeImage(_previous: ActionResult, form: FormData): Promise<ActionResult> {
+  const { client, id } = await requireBusiness();
   let imageId;
   try { imageId = identifier(form, "image_id"); } catch { return { message: "Choose a valid image." }; }
+  const image = await client.from("vendor_images").select("image_type").eq("id", imageId!).eq("vendor_id", id).maybeSingle();
+  if (image.error || !image.data) return { message: "This image is unavailable." };
+  if (image.data.image_type === "product") return { message: "Each product needs one photo. Upload a replacement from Products." };
   const result = await client.rpc("detach_vendor_image", { p_image: imageId! });
   if (result.error) return { message: "This image could not be removed." };
   const removed = await client.storage.from("vendor-media").remove([result.data]);
