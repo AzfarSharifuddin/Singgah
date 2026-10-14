@@ -4,9 +4,10 @@
 
 `/vendor/[slug]/review` loads an active published vendor and its active products
 using public RLS. Missing/inactive/unpublished vendors return 404. The profile CTA
-now links here. The form uses native keyboard-accessible radio inputs, optional
-text (1,000 characters), and optional star-only product ratings. No reviewer name,
-customer ID, publication state, or verification state is accepted from the form.
+now links here. The form requires a public reviewer name of 2–80 letters and spaces,
+uses native keyboard-accessible radio inputs, optional text (1,000 characters),
+and optional star-only product ratings. Customer ID, publication state, and
+verification state are not accepted from the form.
 
 The singleton browser Supabase client persists its session in browser storage and
 refreshes it. Merely browsing a vendor or opening the form creates no identity.
@@ -87,6 +88,12 @@ null customer IDs remain unchanged. New RPC submissions always require a UID.
 Public/anonymous roles still have no direct INSERT/UPDATE/DELETE grants or write
 policies on review tables. Only `authenticated` can execute the two scoped RPCs.
 Public reads continue to show published reviews, with customer IDs hidden.
+
+Migration `20261014091404_require_reviewer_name.sql` requires every new RPC
+submission to include a public name of 2–80 letters and spaces. The rule is
+validated again inside the signed database RPC. Historical rows with a null name
+remain unchanged and are labelled as having no recorded name instead of being
+given a fabricated identity.
 
 A per-customer transaction advisory lock serializes duplicate and rate checks.
 At most five reviews can be submitted per customer in a rolling hour, across

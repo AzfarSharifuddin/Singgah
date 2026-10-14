@@ -32,7 +32,7 @@ try {
     console.log(`PASS: real Aisyah Dessert profile at ${width}px.`);
   }
   await page.goto(`${base}/vendor/luna-hijab`, { waitUntil: "networkidle" });
-  assert.ok((await page.locator("body").innerText()).includes("Anonymous"));
+  assert.ok((await page.locator("body").innerText()).includes("Name not recorded"));
   await page.goto(`${base}/vendor/bunga-kertas-studio`, { waitUntil: "networkidle" });
   assert.ok((await page.locator("body").innerText()).includes("No reviews yet."));
   for (const slug of ["this-vendor-does-not-exist", "draft-demo-stall"]) {
@@ -42,5 +42,5 @@ try {
     assert.ok(!(await page.locator("body").innerText()).includes("Fictional development fixture"));
   }
   assert.deepEqual(errors, [], "Browser runtime errors");
-  console.log("PASS: anonymous reviewer, no-review state, missing/draft 404s, no browser runtime errors.");
+  console.log("PASS: legacy unnamed review label, no-review state, missing/draft 404s, no browser runtime errors.");
 } finally { await browser.close(); }

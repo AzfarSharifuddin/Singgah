@@ -7,6 +7,7 @@ try {
  for(const width of [375,1280]) {
   const context=await browser.newContext({viewport:{width,height:900}});const page=await context.newPage();
   await page.goto(base+"/vendor/aisyah-dessert/review",{waitUntil:"domcontentloaded"});
+  await page.getByLabel("Your name").fill("Nur Aisyah");
   await page.getByRole("group",{name:"Overall experience (required)"}).locator("label").nth(3).click();
   await page.getByLabel("Tell us about your experience").fill("Draft survives reading terms.");
   await page.getByRole("group",{name:"Burnt Cheesecake",exact:true}).locator("label").nth(4).click();
@@ -14,6 +15,7 @@ try {
   await page.waitForURL(url=>url.pathname==="/terms"&&url.searchParams.get("review")==="aisyah-dessert");
   await page.getByRole("link",{name:"Back to your review"}).click();
   await page.waitForFunction(()=>document.querySelector("textarea")?.value==="Draft survives reading terms.");
+  assert.equal(await page.getByLabel("Your name").inputValue(),"Nur Aisyah");
   assert.equal(await page.getByRole("group",{name:"Overall experience (required)"}).getByRole("radio",{name:"4 stars",exact:true}).isChecked(),true);
   assert.equal(await page.getByRole("group",{name:"Burnt Cheesecake",exact:true}).getByRole("radio",{name:"5 stars",exact:true}).isChecked(),true);
   assert.equal(await page.getByRole("checkbox").isChecked(),false);
@@ -36,7 +38,7 @@ try {
  await page.goto(base+"/vendor/aisyah-dessert/review",{waitUntil:"domcontentloaded"});
  await page.waitForFunction(()=>window.__options);
  assert.equal(await page.evaluate(()=>window.__options.execution),"render");
- await page.getByRole("group",{name:"Overall experience (required)"}).locator("label").nth(4).click();await page.getByRole("checkbox").check();
+ await page.getByLabel("Your name").fill("Nur Aisyah");await page.getByRole("group",{name:"Overall experience (required)"}).locator("label").nth(4).click();await page.getByRole("checkbox").check();
  await page.getByRole("button",{name:"Submit Review",exact:true}).click();
  await page.waitForFunction(()=>document.body.textContent.includes("Completing the security check for your anonymous session"));
  await page.clock.fastForward(31000);

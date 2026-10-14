@@ -4,7 +4,7 @@ import Link from "next/link";
 import Script from "next/script";
 import { useEffect, useId, useRef, useState } from "react";
 import { createBrowserSupabaseClient } from "@/lib/supabase/client";
-import { parseReview, REVIEW_TEXT_LIMIT } from "@/lib/reviews/validation";
+import { parseReview, REVIEWER_NAME_LIMIT, REVIEW_TEXT_LIMIT } from "@/lib/reviews/validation";
 
 function Stars({ label, value, onChange, disabled }: { label: string; value: number; onChange: (value: number) => void; disabled: boolean }) {
   const name = useId();
@@ -13,6 +13,7 @@ function Stars({ label, value, onChange, disabled }: { label: string; value: num
 
 export function ReviewForm({ vendorId, slug, products, siteKey }: { vendorId: string; slug: string; products: { id: string; name: string }[]; siteKey: string }) {
   const [termsAccepted, setTermsAccepted] = useState(false);
+  const [name, setName] = useState("");
   const [rating, setRating] = useState(0);
   const [text, setText] = useState("");
   const [ratings, setRatings] = useState<Record<string, number>>({});
@@ -39,6 +40,7 @@ export function ReviewForm({ vendorId, slug, products, siteKey }: { vendorId: st
         const draft = JSON.parse(raw);
         if (Date.now() - draft.savedAt > 30 * 60 * 1000) return;
         if (Number.isInteger(draft.rating) && draft.rating >= 0 && draft.rating <= 5) setRating(draft.rating);
+        if (typeof draft.name === "string") setName(draft.name.slice(0, REVIEWER_NAME_LIMIT));
         if (typeof draft.text === "string") setText(draft.text.slice(0, REVIEW_TEXT_LIMIT));
         if (draft.ratings && typeof draft.ratings === "object") setRatings(Object.fromEntries(Object.entries(draft.ratings).filter(([id, value]) => products.some(product => product.id === id) && Number.isInteger(value) && Number(value) >= 1 && Number(value) <= 5)) as Record<string, number>);
         // Agreement stays unchecked after reading, so acceptance is deliberate.
@@ -97,7 +99,7 @@ export function ReviewForm({ vendorId, slug, products, siteKey }: { vendorId: st
   }
 
   function saveDraft() {
-    try { sessionStorage.setItem(`singgah-review-draft:${vendorId}`, JSON.stringify({ rating, text, ratings, savedAt: Date.now() })); } catch { /* Optional draft recovery. */ }
+    try { sessionStorage.setItem(`singgah-review-draft:${vendorId}`, JSON.stringify({ name, rating, text, ratings, savedAt: Date.now() })); } catch { /* Optional draft recovery. */ }
   }
 
   async function submit(event: React.FormEvent) {
@@ -105,7 +107,7 @@ export function ReviewForm({ vendorId, slug, products, siteKey }: { vendorId: st
     if (busy.current) return;
     setError("");
     let parsed;
-    try { parsed = parseReview({ vendorId, termsAccepted, rating, text, products: Object.entries(ratings).map(([productId, value]) => ({ productId, rating: value })) }); }
+    try { parsed = parseReview({ vendorId, name, termsAccepted, rating, text, products: Object.entries(ratings).map(([productId, value]) => ({ productId, rating: value })) }); }
     catch (cause) { setError(cause instanceof Error ? cause.message : "Please check your review."); return; }
     busy.current = true;
     setStatus("Restoring your customer session…");
@@ -138,15 +140,16 @@ export function ReviewForm({ vendorId, slug, products, siteKey }: { vendorId: st
 
   if (done || existing) return <section role="status" className="rounded-2xl border border-hutan/15 bg-white p-7"><h2 className="font-serif text-3xl">{done ? "Terima kasih!" : "You’ve already reviewed this vendor."}</h2><p className="mt-4 leading-7">{done ? "Your review helps local businesses grow. Thank you for sharing your experience." : "Thank you for sharing your experience. Each customer can review a vendor once."}</p><a className="mt-6 inline-flex min-h-12 items-center rounded-xl bg-hutan px-5 text-white" href={`/vendor/${slug}#reviews`}>Back to vendor</a></section>;
   return <form onSubmit={submit} className="space-y-8 rounded-2xl border border-hutan/15 bg-white p-5 sm:p-8" aria-busy={!!status}>
+    <div><label htmlFor="reviewer-name" className="text-sm font-semibold">Your name <span className="text-[#793b28]">(required)</span></label><input id="reviewer-name" name="name" type="text" value={name} onChange={(event) => setName(event.target.value)} required minLength={2} maxLength={REVIEWER_NAME_LIMIT} autoComplete="name" disabled={!!status} className="mt-3 min-h-12 w-full rounded-xl border border-hutan/25 px-3" aria-describedby="name-help" /><p id="name-help" className="mt-1 text-xs text-[#5d665f]">Letters and spaces only. Your name will appear with your review.</p></div>
     <Stars label="Overall experience (required)" value={rating} onChange={setRating} disabled={!!status} />
     <div><label htmlFor="experience" className="text-sm font-semibold">Tell us about your experience <span className="font-normal">(optional)</span></label><textarea id="experience" value={text} onChange={(event) => setText(event.target.value)} maxLength={REVIEW_TEXT_LIMIT} disabled={!!status} rows={4} className="mt-3 w-full resize-y rounded-xl border border-hutan/25 p-3" aria-describedby="text-limit" /><p id="text-limit" className="mt-1 text-xs text-[#5d665f]">{text.length}/{REVIEW_TEXT_LIMIT} characters</p></div>
-    {products.length > 0 && <section aria-labelledby="products-heading"><h2 id="products-heading" className="font-serif text-2xl">What did you try?</h2><p className="mt-2 text-sm text-[#5d665f]">Optional — rate any items you tried, or skip this section.</p><div className="mt-5 space-y-5">{products.map((product) => <div key={product.id} className="border-t border-hutan/10 pt-4"><Stars label={product.name} value={ratings[product.id] || 0} onChange={(value) => setRatings({ ...ratings, [product.id]: value })} disabled={!!status} />{ratings[product.id] && <button type="button" disabled={!!status} className="mt-1 min-h-11 text-sm underline" aria-label={`Remove rating for ${product.name}`} onClick={() => setRatings(Object.fromEntries(Object.entries(ratings).filter(([id]) => id !== product.id)))}>Remove rating</button>}</div>)}</div></section>}
+    {products.length > 0 && <section aria-labelledby="products-heading"><h2 id="products-heading" className="font-serif text-2xl">What did you try?</h2><p className="mt-2 text-sm text-[#5d665f]">Optional. Rate any items you tried, or skip this section.</p><div className="mt-5 space-y-5">{products.map((product) => <div key={product.id} className="border-t border-hutan/10 pt-4"><Stars label={product.name} value={ratings[product.id] || 0} onChange={(value) => setRatings({ ...ratings, [product.id]: value })} disabled={!!status} />{ratings[product.id] && <button type="button" disabled={!!status} className="mt-1 min-h-11 text-sm underline" aria-label={`Remove rating for ${product.name}`} onClick={() => setRatings(Object.fromEntries(Object.entries(ratings).filter(([id]) => id !== product.id)))}>Remove rating</button>}</div>)}</div></section>}
     <div className="flex items-start gap-3 rounded-xl bg-[#f5f1e9] p-4"><input id="review-terms" type="checkbox" checked={termsAccepted} onChange={(event) => setTermsAccepted(event.target.checked)} disabled={!!status} className="mt-1 size-5 shrink-0 accent-hutan" aria-required="true" /><label htmlFor="review-terms" className="text-sm leading-6">I agree to the <Link href={`/terms?review=${encodeURIComponent(slug)}`} onClick={saveDraft} className="font-semibold underline underline-offset-4">terms and conditions</Link> and confirm this review reflects my own experience.</label></div>
     <div ref={container} />
     <Script src="https://challenges.cloudflare.com/turnstile/v0/api.js?render=explicit" onReady={initialize} onError={() => setError("The security check couldn’t load. Check your connection and reload.")} />
     {error && <p role="alert" className="rounded-xl bg-[#fff1e9] p-4 text-sm text-[#793b28]">{error}</p>}
     <p role="status" className="text-sm">{status}</p>
     <button type="submit" disabled={!!status || !ready} className="min-h-12 w-full rounded-xl bg-hutan px-5 py-3 font-semibold text-white disabled:opacity-60">{status ? "Please wait…" : "Submit Review"}</button>
-    <p className="text-xs leading-5 text-[#5d665f]">No signup needed. Your review is public and shown as Anonymous. One review per customer, per vendor.</p>
+    <p className="text-xs leading-5 text-[#5d665f]">No signup needed. Your name and review are public. One review per customer, per vendor.</p>
   </form>;
 }

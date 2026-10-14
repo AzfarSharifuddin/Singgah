@@ -94,6 +94,7 @@ try {
     await page.goto(`${base}/vendor/${slug}/review`, { waitUntil: "domcontentloaded" });
     const submit = page.getByRole("button", { name: "Submit Review", exact: true });
     await page.waitForFunction(() => !document.querySelector('button[type="submit"],form > button')?.disabled);
+    await page.getByLabel("Your name").fill(`Reviewer ${scenario}`);
     await submit.click();
     await page.getByRole("alert").filter({ hasText: "Choose an overall rating" }).waitFor();
     await page.getByRole("group", { name: "Overall experience (required)" }).locator("label").nth(4).click();
@@ -109,8 +110,8 @@ try {
     await page.getByRole("heading", { name: "Terima kasih!" }).waitFor();
     const user = await identity(page);
     assert.ok(user); users.add(user); record();
-    const rows = (await db.query("select id,rating,review_text,status,verification_status from public.reviews where customer_id=$1", [user])).rows;
-    assert.equal(rows.length, 1); assert.equal(rows[0].rating, 5); assert.equal(rows[0].status, "published"); assert.equal(rows[0].verification_status, "unverified");
+    const rows = (await db.query("select id,rating,review_text,reviewer_name,status,verification_status from public.reviews where customer_id=$1", [user])).rows;
+    assert.equal(rows.length, 1); assert.equal(rows[0].rating, 5); assert.equal(rows[0].reviewer_name, `Reviewer ${scenario}`); assert.equal(rows[0].status, "published"); assert.equal(rows[0].verification_status, "unverified");
     assert.equal(rows[0].review_text, scenario === "B" || scenario === "D" ? "Sprint 4 controlled browser review." : null);
     const count = Number((await db.query("select count(*) from public.product_ratings where review_id=$1", [rows[0].id])).rows[0].count);
     assert.equal(count, scenario === "C" || scenario === "D" ? 1 : 0);

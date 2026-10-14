@@ -19,7 +19,7 @@ export function VendorReviews({ summary, reviews, slug, page, sort }: {
         })}</div>
       </div>
       <div className="divide-y divide-hutan/10">{reviews.map((review) => <article key={review.id} className="py-6">
-        <div className="flex flex-wrap items-center justify-between gap-2"><h3 className="font-semibold">{review.reviewer_name?.trim() || "Anonymous"}</h3><time dateTime={review.created_at} className="text-xs text-[#5d665f]">{new Intl.DateTimeFormat("en-MY", { day: "numeric", month: "short", year: "numeric", timeZone: "Asia/Kuala_Lumpur" }).format(new Date(review.created_at))}</time></div>
+        <div className="flex flex-wrap items-center justify-between gap-2"><h3 className="font-semibold">{review.reviewer_name?.trim() || "Name not recorded"}</h3><time dateTime={review.created_at} className="text-xs text-[#5d665f]">{new Intl.DateTimeFormat("en-MY", { day: "numeric", month: "short", year: "numeric", timeZone: "Asia/Kuala_Lumpur" }).format(new Date(review.created_at))}</time></div>
         <div className="mt-3"><RatingStars rating={review.rating} /></div>
         {review.review_text?.trim() && <p className="mt-3 whitespace-pre-line text-sm leading-7 text-[#46534a]">{review.review_text}</p>}
       </article>)}</div>

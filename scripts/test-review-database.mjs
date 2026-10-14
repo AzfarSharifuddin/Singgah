@@ -14,7 +14,7 @@ try {
   const initialProductCount = Number((await db.query("select rating_count from public.product_rating_summaries where product_id=$1", [id(7, 1)])).rows[0].rating_count);
   const key = (await db.query("select signing_secret from private.review_submission_config where singleton")).rows[0].signing_secret;
   await db.query("insert into auth.users(id, aud, role, is_anonymous) values ($1,'authenticated','authenticated',true),($2,'authenticated','authenticated',true)", [customer, other]);
-  const base = { vendorId: id(6, 1), customerId: customer, termsAccepted: true, termsVersion: "2026-09-27", rating: 5, text: null, products: [], expires: Math.floor(Date.now() / 1000) + 120 };
+  const base = { vendorId: id(6, 1), customerId: customer, termsAccepted: true, termsVersion: "2026-09-27", name: "Nur Aisyah", rating: 5, text: null, products: [], expires: Math.floor(Date.now() / 1000) + 120 };
   const sign = (data) => { const payload = JSON.stringify(data); return [payload, createHmac("sha256", key).update(payload).digest("hex")]; };
   async function asUser(user = customer) {
     await db.query("reset role");
@@ -36,6 +36,7 @@ try {
   await rejected("identity spoofing", rpc, sign({ ...base, customerId: other }), /invalid_identity/);
   for (const rating of [0, 6, 1.5, "5"]) await rejected(`invalid rating ${rating}`, rpc, sign({ ...base, rating }), /invalid_rating/);
   await rejected("text length", rpc, sign({ ...base, text: "x".repeat(1001) }), /review_too_long/);
+  for (const name of [null, "A", "Aisyah99", "Nur_Aisyah", "Nur  Aisyah"]) await rejected(`invalid reviewer name ${name}`, rpc, sign({ ...base, name }), /invalid_reviewer_name/);
   for (const field of ["status", "verification_status"]) await rejected(`cannot choose ${field}`, rpc, sign({ ...base, [field]: "published" }), /invalid_review/);
   await rejected("terms declined", rpc, sign({ ...base, termsAccepted: false }), /terms_acceptance_required/);
   await rejected("stale terms", rpc, sign({ ...base, termsVersion: "old" }), /terms_acceptance_required/);
@@ -61,7 +62,7 @@ try {
   await db.query("reset role");
   const row = (await db.query("select * from public.reviews where id=$1", [created])).rows[0];
   assert.equal(row.terms_version, "2026-09-27"); assert.ok(row.terms_accepted_at);
-  assert.equal(row.customer_id, customer); assert.equal(row.status, "published"); assert.equal(row.verification_status, "unverified"); assert.equal(row.review_text, null);
+  assert.equal(row.customer_id, customer); assert.equal(row.reviewer_name, "Nur Aisyah"); assert.equal(row.status, "published"); assert.equal(row.verification_status, "unverified"); assert.equal(row.review_text, null);
   assert.equal(Number((await db.query("select review_count from public.vendor_rating_summaries where vendor_id=$1", [id(6, 1)])).rows[0].review_count), initialReviewCount + 1);
   assert.equal(Number((await db.query("select rating_count from public.product_rating_summaries where product_id=$1", [id(7, 1)])).rows[0].rating_count), initialProductCount + 1);
   checks += 4;
