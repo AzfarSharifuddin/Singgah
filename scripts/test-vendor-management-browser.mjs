@@ -6,7 +6,14 @@ import { createClient } from "@supabase/supabase-js";
 import { reviewDatabase } from "./review-db-client.mjs";
 import { testAccount, cleanAccount } from "./vendor-test-fixtures.mjs";
 const { chromium } = createRequire(import.meta.url)(process.env.PLAYWRIGHT_MODULE || "playwright");
-const db=await reviewDatabase(); const browser=await chromium.launch({channel:"msedge",headless:true});
+const db=await reviewDatabase();
+if (!process.env.NEXT_PUBLIC_TURNSTILE_SITE_KEY) {
+  await db.end();
+  throw new Error("Vendor browser auth tests require NEXT_PUBLIC_TURNSTILE_SITE_KEY in ignored .env.local. Use a widget allowed on TEST_BASE_URL with its matching secret configured in Supabase Auth; rebuild/restart the app after setting the public key. No test accounts were created.");
+}
+let browser;
+try { browser=await chromium.launch({channel:process.env.TEST_BROWSER_CHANNEL || "msedge",headless:true}); }
+catch(error) { await db.end(); throw error; }
 const base=process.env.TEST_BASE_URL || "http://127.0.0.1:3002";
 const accounts=[]; const customers=[];
 const screenshot=process.env.SCREENSHOT_DIR;
@@ -18,23 +25,31 @@ async function upload(page,section,label) {
   await section.getByRole("button",{name:"Upload image",exact:true}).click();
   await section.getByRole("status").filter({hasText:"Image uploaded and saved."}).waitFor();
 }
+async function captcha(page) {
+  await page.waitForFunction(() => !!document.querySelector('input[name="cf-turnstile-response"]')?.value, undefined, { timeout: 60000 });
+  return page.locator('input[name="cf-turnstile-response"]').inputValue();
+}
 try {
   // Email delivery is exercised only by check-vendor-registration.mjs with an
   // explicitly authorized real recipient. This suite never sends email.
   console.log("Using temporary confirmed accounts; email registration is a separate account-level check.");
   for(const width of [375,1280]) {
-    const account=await testAccount(db); accounts.push(account);
-    if(screenshot)writeFileSync(`${screenshot}/vendor-test-accounts.json`,JSON.stringify(accounts.map(({id,email})=>({id,email}))));
     const context=await browser.newContext({viewport:{width,height:900}}); const page=await context.newPage(); const errors=[];
     page.on("pageerror",e=>errors.push(e.message)); page.on("console",m=>{if(m.type()==="error")errors.push(m.text())});
-    await page.goto(`${base}/dashboard`,{waitUntil:"networkidle"}); assert.match(page.url(),/\/vendor\/login$/);
+    await page.goto(`${base}/dashboard`,{waitUntil:"domcontentloaded"}); assert.match(page.url(),/\/vendor\/login$/);
+    const account=await testAccount(db,{captchaToken:await captcha(page)}); accounts.push(account);
+    if(screenshot)writeFileSync(`${screenshot}/vendor-test-accounts.json`,JSON.stringify(accounts.map(({id,email})=>({id,email}))));
+    await page.reload({waitUntil:"domcontentloaded"});
     const customerClient=createClient(process.env.NEXT_PUBLIC_SUPABASE_URL,process.env.NEXT_PUBLIC_SUPABASE_PUBLISHABLE_KEY,{auth:{persistSession:false,autoRefreshToken:false}});
-    const customer=await customerClient.auth.signInAnonymously(); assert.equal(customer.error,null);
+    const customer=await customerClient.auth.signInAnonymously({options:{captchaToken:await captcha(page)}}); assert.equal(customer.error,null);
     customers.push(customer.data.user.id);
     const customerKey=`sb-${new URL(process.env.NEXT_PUBLIC_SUPABASE_URL).hostname.split('.')[0]}-auth-token`;
     await page.evaluate(({key,session})=>localStorage.setItem(key,JSON.stringify(session)),{key:customerKey,session:customer.data.session});
+    await page.reload({waitUntil:"domcontentloaded"}); await captcha(page);
     await page.getByLabel("Email",{exact:true}).fill(account.email); await page.getByLabel("Password",{exact:true}).fill("Wrong-password-123!");
     await page.getByRole("button",{name:"Sign in",exact:true}).click(); await page.locator('form [role="alert"]').waitFor();
+    await page.reload({waitUntil:"domcontentloaded"}); await captcha(page);
+    await page.getByLabel("Email",{exact:true}).fill(account.email);
     await page.getByLabel("Password",{exact:true}).fill(account.password); await page.getByRole("button",{name:"Sign in",exact:true}).click();
     await page.waitForURL(/\/dashboard\/onboarding$/);
     await page.getByLabel("Business name",{exact:true}).fill(`Sprint Five Test ${width}`);
@@ -64,19 +79,30 @@ try {
     await page.getByRole("navigation",{name:"Vendor dashboard"}).getByRole("link",{name:"Profile",exact:true}).click();
     await page.getByLabel("Business name",{exact:true}).fill(`Updated Test ${width}`);
     await page.getByRole("button",{name:"Save profile"}).click(); await page.locator('form [role="status"]').waitFor();
-    await page.reload({waitUntil:"networkidle"}); assert.equal(await page.getByLabel("Business name",{exact:true}).inputValue(),`Updated Test ${width}`);
+    await page.reload({waitUntil:"domcontentloaded"}); assert.equal(await page.getByLabel("Business name",{exact:true}).inputValue(),`Updated Test ${width}`);
     assert.equal((await db.query("select slug from public.vendors where id=$1",[vendor.id])).rows[0].slug,vendor.slug);
     await page.getByRole("navigation",{name:"Vendor dashboard"}).getByRole("link",{name:"Products",exact:true}).click();
     await page.getByRole("link",{name:"Add product",exact:true}).click();
     await page.getByLabel("Product name",{exact:true}).fill("Test Brownie"); await page.getByLabel("Price in MYR (optional)").fill("12.50");
+    // Required image prevents submission; malformed image exercises server cleanup.
+    const productPhoto=page.getByLabel("Product image",{exact:true});
+    assert.equal(await productPhoto.getAttribute("required"),"");
+    assert.equal(await productPhoto.evaluate(input=>input.validity.valueMissing),true);
+    await productPhoto.setInputFiles({name:"broken.png",mimeType:"image/png",buffer:Buffer.from("not a decodable PNG")});
+    const beforeFailure=Number((await db.query("select count(*) from public.products where vendor_id=$1",[vendor.id])).rows[0].count);
+    await page.getByRole("button",{name:"Save product"}).click();
+    await page.locator('form [role="alert"]').filter({hasText:"couldn’t be read"}).waitFor();
+    assert.equal(Number((await db.query("select count(*) from public.products where vendor_id=$1",[vendor.id])).rows[0].count),beforeFailure,"Failed image upload cleans up its exact temporary product");
+    await productPhoto.setInputFiles({name:"product.png",mimeType:"image/png",buffer:image});
     await page.getByRole("button",{name:"Save product"}).click(); await page.waitForURL(/\/dashboard\/products\?saved=1$/);
     await page.getByRole("link",{name:"Edit product",exact:true}).click();
+    assert.equal(await page.getByLabel("Product image (optional replacement)",{exact:true}).getAttribute("required"),null);
     await page.getByLabel("Product name",{exact:true}).fill("Updated Brownie"); await page.getByRole("button",{name:"Save product"}).click();
     await page.waitForURL(/\/dashboard\/products\?saved=1$/);
     await page.locator("summary").filter({hasText:"Product image"}).click(); await upload(page,page.locator("main article"),"Test product photo");
     // Platform approval uses scoped administrative tooling, never vendor controls.
     await db.query("update public.vendors set status='published' where id=$1",[vendor.id]);
-    await page.goto(`${base}/vendor/${vendor.slug}`,{waitUntil:"networkidle"});
+    await page.goto(`${base}/vendor/${vendor.slug}`,{waitUntil:"domcontentloaded"});
     await page.getByRole("heading",{name:`Updated Test ${width}`,exact:true}).waitFor();
     assert.ok((await page.locator("main").innerText()).includes("Taman Mount Austin"));
     assert.ok((await page.locator("main").innerText()).includes("Updated Brownie"));
@@ -87,18 +113,18 @@ try {
       await page.waitForFunction(alt=>{const img=[...document.images].find(image=>image.alt===alt);return img?.complete && img.naturalWidth>0},alt);
     }
     assert.equal(await page.evaluate(()=>document.documentElement.scrollWidth>innerWidth),false);
-    await page.goto(`${base}/dashboard`,{waitUntil:"networkidle"});
+    await page.goto(`${base}/dashboard`,{waitUntil:"domcontentloaded"});
     assert.equal(await page.getByRole("link",{name:"Open public profile"}).count(),1);
     assert.equal(await page.evaluate(()=>document.documentElement.scrollWidth>innerWidth),false);
     if(screenshot)await page.screenshot({path:`${screenshot}/dashboard-${width}.png`,fullPage:true});
-    await page.goto(`${base}/vendor/aisyah-dessert/review`,{waitUntil:"networkidle"});
+    await page.goto(`${base}/vendor/${vendor.slug}/review`,{waitUntil:"domcontentloaded"});
     await page.getByRole("heading",{name:"You’re signed in as a vendor."}).waitFor();
     await page.getByRole("link",{name:"Go to dashboard"}).click();
     await page.getByRole("navigation",{name:"Vendor dashboard"}).getByRole("link",{name:"Products",exact:true}).click();
     await page.getByRole("button",{name:"Deactivate product"}).click(); await page.getByText("Inactive · RM 12.50",{exact:true}).waitFor();
     assert.ok((await page.locator("main").innerText()).includes("Inactive"));
     await page.getByRole("button",{name:"Sign out",exact:true}).click(); await page.waitForURL(/\/vendor\/login$/);
-    await page.goto(`${base}/dashboard`,{waitUntil:"networkidle"}); assert.match(page.url(),/\/vendor\/login$/);
+    await page.goto(`${base}/dashboard`,{waitUntil:"domcontentloaded"}); assert.match(page.url(),/\/vendor\/login$/);
     assert.equal(await page.evaluate(key=>JSON.parse(localStorage.getItem(key)).user.id,customerKey),customer.data.user.id);
     assert.deepEqual(errors,[],"No browser errors in vendor flow");
     console.log(`PASS: ${width}px login, onboarding, profile, product create/edit/deactivate, all images, public integration, persistence and logout.`);

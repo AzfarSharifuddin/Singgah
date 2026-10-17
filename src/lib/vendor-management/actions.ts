@@ -149,7 +149,11 @@ export async function saveProduct(_previous: ActionResult, form: FormData): Prom
     imageForm.set("alt", data.name);
     const uploaded = await uploadImage({ message: "" }, imageForm);
     if (!uploaded.ok) {
-      if (isNew) await client.from("products").delete().eq("id", productId!).eq("vendor_id", id);
+      if (isNew) {
+        const cleanup = await client.rpc("discard_unfinished_product", { p_product: productId! });
+        revalidatePath("/dashboard/products");
+        if (cleanup.error || !cleanup.data) return { message: `${uploaded.message} An inactive item was kept because cleanup could not complete. Open Products to retry its photo.` };
+      }
       return uploaded;
     }
   }

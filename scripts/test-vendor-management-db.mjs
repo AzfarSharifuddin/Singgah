@@ -54,9 +54,9 @@ try {
   await denied("public cannot change business", "update public.vendors set name='Intruder' where id=$1", [va], /permission denied/);
   assert.equal((await db.query("select id from public.vendors where id=$1", [va])).rowCount,0); count++;
   assert.equal((await db.query("select id from storage.objects where name=$1", [path])).rowCount,0); count++;
-  assert.equal((await db.query("select id from public.vendors where slug='aisyah-dessert'")).rowCount,1); count++;
   await db.query("reset role"); await db.query("update public.vendors set status='published' where id=$1", [va]);
   await identity(null,"anon");
+  assert.equal((await db.query("select id from public.vendors where id=$1", [va])).rowCount,1); count++;
   assert.equal((await db.query("select id from storage.objects where name=$1", [path])).rowCount,1); count++;
   console.log(`PASS: ${count} ownership/RLS/slug/media checks; transaction rolled back.`);
 } finally { await db.query("rollback"); await db.end(); }

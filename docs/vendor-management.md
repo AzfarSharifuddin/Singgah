@@ -101,7 +101,9 @@ vendors/{vendorId}/{uuid}.webp  (private verification bucket)
 ```
 
 Storage INSERT/SELECT/DELETE policies validate the path against `auth.uid()`'s
-owned business. Product paths must reference an actual product of that business.
+owned business. Product paths must reference an actual product of that business. New products
+require a photo and start inactive while uploading. Edits retain an existing photo
+unless replaced; a product without a photo must receive one before it can be saved.
 There is no overwrite/UPDATE policy. Public reads require matching public image
 metadata, an active published business, and an active product where applicable.
 The existing profile's signed-URL implementation is reused without a duplicate
@@ -111,7 +113,10 @@ Uploads go through server actions using the owner's JWT, never a service-role ke
 Files must be at most 3 MiB, have an allowed declared MIME and match the decoded
 image format. `sharp` rejects malformed/animated images and excessive pixel counts
 (20 million); it corrects orientation, strips metadata, resizes to at most 512px
-for logos or 2048px for other images, and emits WebP. Server Action requests are
+for logos or 1600px for other images, and emits WebP. Compression tries quality
+80, 70 and 60 targeting 500 KiB. A final pass reduces the maximum dimension to
+1200px at quality 60; 500 KiB is a target, not a guaranteed output limit.
+The hard output limit remains 3 MiB. Server Action requests are
 bounded at 4 MiB; the extra space allows multipart fields around a valid 3 MiB file.
 Extremely oversized requests can be rejected by Next before the friendly form
 validator; the normal 3 MiB validation path is browser-tested.
@@ -197,3 +202,13 @@ replies/reporting, gallery reordering, password reset UI, profile autosave, mult
 staff/businesses, admin UI, analytics and NFC tracking are deferred. Unsaved form
 values survive validation failures but not deliberate navigation away. Retention,
 per-account upload quotas and operational mail monitoring are deployment work.
+
+## Failed product upload cleanup
+
+Migration 20261017000100_discard_unfinished_product.sql adds the narrowly scoped discard_unfinished_product RPC. It derives ownership from the confirmed session, locks the vendor then product, and deletes only an inactive owned product created in the last 15 minutes with no image references, ratings or vendor-media objects. Vendors still cannot directly DELETE products. Cleanup errors/denials are surfaced to the user; the item stays inactive and can be edited to retry its photo. This is compensation for a failed upload, not general product deletion or a cross-service transaction. Existing older inactive rows are preserved.
+
+## Current browser test prerequisites
+
+The full vendor browser suite now supplies a required product photo, tests malformed-file cleanup against the exact temporary vendor, and edits an existing product without replacing its photo. It uses only its own approved fixture for public-profile and review-route checks, rather than assuming an old seeded vendor remains published. CAPTCHA tokens are fresh for each Auth request; the suite never disables Supabase Auth protection. Configure NEXT_PUBLIC_TURNSTILE_SITE_KEY locally, allow the test hostname in that widget, and use the matching secret in the target Supabase Auth configuration. Rebuild/restart after changing the public key. A missing key fails before test accounts are created. TEST_BROWSER_CHANNEL can select chrome; the default remains msedge. Fixture cleanup includes private proof photos as well as public vendor media.
+
+On 17 October 2026, all hosted migration checksums matched, the cleanup migration was applied, and 14 cleanup plus 21 vendor security checks and the admin database suite passed using rollback-only fixtures. The 23 unit tests, lint and TypeScript passed; the production Webpack build passed with Node's native config loader. The default Turbopack build hits a Windows sandbox path-access restriction. Full browser Auth/upload verification remains pending local Turnstile setup; this environment currently has no public site key and Auth correctly rejects requests without CAPTCHA. No browser-pass claim is made for this run.

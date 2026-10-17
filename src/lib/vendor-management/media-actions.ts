@@ -23,10 +23,11 @@ export async function uploadImage(_previous: ActionResult, form: FormData): Prom
   if (!formats[file.type]) return { message: "Use a JPEG, PNG or WebP image." };
   let bytes;
   try {
-    const image = sharp(Buffer.from(await file.arrayBuffer()), { limitInputPixels: 20000000 });
+    const input = Buffer.from(await file.arrayBuffer());
+    const image = sharp(input, { limitInputPixels: 20000000 });
     const metadata = await image.metadata();
     if (metadata.format !== formats[file.type] || (metadata.pages || 1) > 1) return { message: "Use a valid, non-animated JPEG, PNG or WebP image." };
-    bytes = await compressVendorImage(Buffer.from(await file.arrayBuffer()), kind === "logo" ? 512 : 1600);
+    bytes = await compressVendorImage(input, kind === "logo" ? 512 : 1600);
     if (bytes.byteLength > 3 * 1024 * 1024) return { message: "The image is still too large. Please choose a smaller file." };
   } catch { return { message: "This image couldn’t be read. Try a smaller valid JPEG, PNG or WebP." }; }
   const path = `vendors/${id}/${kind === "product" ? `products/${productId}` : kind}/${randomUUID()}.webp`;
@@ -55,10 +56,11 @@ export async function uploadProofImage(_previous: ActionResult, form: FormData):
 
   let bytes: Buffer;
   try {
-    const image = sharp(Buffer.from(await file.arrayBuffer()), { limitInputPixels: 20000000 });
+    const input = Buffer.from(await file.arrayBuffer());
+    const image = sharp(input, { limitInputPixels: 20000000 });
     const metadata = await image.metadata();
     if (metadata.format !== formats[file.type] || (metadata.pages || 1) > 1) return { message: "Use a valid, non-animated JPEG, PNG or WebP image." };
-    bytes = await compressVendorImage(Buffer.from(await file.arrayBuffer()));
+    bytes = await compressVendorImage(input);
     if (bytes.byteLength > 3 * 1024 * 1024) return { message: "The image is still too large. Please choose a smaller file." };
   } catch { return { message: "This image couldn’t be read. Try a smaller valid JPEG, PNG or WebP." }; }
 

@@ -11,6 +11,9 @@ account configuration and are not implied by the code being present.
 
 Stories Make Places Brighter.
 
+See [performance changes, cache freshness and verification](docs/performance.md)
+for the public-read optimizations and their regression coverage.
+
 Next.js App Router, TypeScript, Tailwind CSS, ESLint and the Sprint 1 Supabase foundation.
 The homepage introduces public discovery with real categories, states and vendors.
 Sprint 2 adds the real Supabase-backed public vendor profile at `/vendor/[slug]`.
@@ -311,3 +314,9 @@ Earlier sprint sections describe their original scope; Sprint 5 supersedes the e
 ### Community polish
 
 Public footer links to /faq and /terms. Reviews support newest/highest/lowest sorting and mandatory terms acceptance (validated in the form, API and signed database transaction). See docs/review-submission.md. National static location data covers 16 states/territories and 160 DOSM district units, retaining existing city/locality records; see docs/malaysian-locations.md for attribution and precise coverage. Apply new migrations using npm run db:migrate; do not re-seed hosted vendor data for this update.
+
+### Maintenance checks
+
+The safe environment template is restored at .env.example; copy placeholders into ignored .env.local. Resend SMTP credentials are configured in Supabase Auth and do not belong in browser environment variables. Before new migrations, run npm run db:audit (read-only checksum inspection); see docs/migration-history.md for the reviewer-name migration variants. Do not edit previously applied SQL or change the ledger merely to bypass a mismatch.
+
+Failed product-image uploads use the scoped cleanup RPC from migration 20261017000100_discard_unfinished_product.sql. Checks: npm run test:product-submission and npm run test:product-cleanup-db. Current image sizing/compression and browser-test prerequisites are documented in docs/vendor-management.md.

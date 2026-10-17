@@ -31,7 +31,12 @@
     "test:vendor-management-db": "node scripts/test-vendor-management-db.mjs",
     "test:vendor-storage": "node scripts/test-vendor-storage.mjs",
     "test:vendor-management-browser": "node scripts/test-vendor-management-browser.mjs",
-    "test:community-browser": "node scripts/test-community-browser.mjs"
+    "test:community-browser": "node scripts/test-community-browser.mjs",
+    "test:product-cleanup-db": "node scripts/test-product-cleanup-db.mjs",
+    "db:audit": "node scripts/audit-migrations.mjs",
+    "test:product-submission": "node --test scripts/test-product-submission.mjs",
+    "test:public-data": "node --test scripts/test-public-data.mjs",
+    "test:public-performance-browser": "node scripts/test-public-performance-browser.mjs"
   },
   "dependencies": {
     "@marsidev/react-turnstile": "^1.6.2",
