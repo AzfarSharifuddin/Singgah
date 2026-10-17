@@ -35,7 +35,7 @@ try {
   const page = await browser.newPage();
   const errors = [];
   page.on("pageerror", (error) => errors.push(error.message));
-  page.on("console", (message) => { if (message.type() === "error") errors.push(message.text()); });
+  page.on("console", (message) => { if (message.type() === "error") errors.push(`${message.text()} (${new URL(page.url()).pathname})`); });
   const visit = async (path) => {
     const response = await page.goto(base + path, { waitUntil: "networkidle" });
     assert.equal(response.status(), 200, path);
@@ -73,6 +73,38 @@ try {
     const products = (await read(client.from("products").select("id,name").eq("vendor_id", vendor.id).eq("is_active", true))).data;
     assert.equal(await page.locator("#products article").count(), products.length);
     for (const product of products) assert.ok((await page.locator("#products").textContent()).includes(product.name));
+    const assertCardAlignment = async () => {
+      const boxes = await page.locator("#products article").evaluateAll((cards) => cards.map((card) => {
+        const box = card.getBoundingClientRect();
+        const price = card.querySelector("footer > p").getBoundingClientRect();
+        return { top: box.top, width: box.width, bottom: box.bottom, priceTop: price.top };
+      }));
+      for (const card of boxes) {
+        assert.ok(card.width >= 280, "product cards must have readable width");
+        for (const peer of boxes.filter((other) => Math.abs(other.top - card.top) < 1)) {
+          assert.ok(Math.abs(card.priceTop - peer.priceTop) <= 1, "prices align across each row");
+          assert.ok(Math.abs(card.bottom - peer.bottom) <= 1, "cards align across each row");
+        }
+      }
+      if (boxes.length > 1) assert.equal(Math.abs(boxes[0].top - boxes[1].top) < 1, width !== 375);
+    };
+    await assertCardAlignment();
+    const expand = page.getByRole("button", { name: /^Read more about / }).first();
+    if (await expand.count()) {
+      const descriptionId = await expand.getAttribute("aria-controls");
+      const description = page.locator(`[id="${descriptionId}"]`);
+      const collapsedHeight = (await description.boundingBox()).height;
+      assert.ok(collapsedHeight <= 73, "description preview is at most three lines");
+      await expand.focus(); await expand.press("Enter");
+      await page.waitForFunction((id) => document.getElementById(id).clientHeight > 73, descriptionId);
+      assert.ok((await description.boundingBox()).height > collapsedHeight);
+      await assertCardAlignment();
+      const collapse = page.getByRole("button", { name: /^Show less about / }).first();
+      assert.equal(await collapse.getAttribute("aria-expanded"), "true");
+      await collapse.press("Space");
+      await page.waitForFunction((id) => document.getElementById(id).clientHeight <= 73, descriptionId);
+      await assertCardAlignment();
+    }
     const images = page.locator("main img");
     if (await images.count()) {
       const source = new URL(await images.first().evaluate((image) => image.currentSrc || image.src), base);
@@ -93,7 +125,7 @@ try {
     await noOverflow();
     await page.goBack({ waitUntil: "networkidle" });
     await page.getByRole("heading", { name: vendor.name, exact: true }).waitFor();
-    console.log(`PASS: ${width}px homepage, search, cascading filters, profile/products/ratings, responsive images, review route and browser back.`);
+    console.log(`PASS: ${width}px homepage, search, filters, product-card/price alignment, keyboard description toggle, profile/ratings/images, review route and browser back.`);
   }
   for (const sort of ["highest", "lowest", "newest"]) {
     await visit(`/vendor/${vendor.slug}?reviewSort=${sort}#reviews`);
