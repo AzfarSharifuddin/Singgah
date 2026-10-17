@@ -3,15 +3,15 @@
 import Image from "next/image";
 import { useState } from "react";
 
-export function ProfileImage({ src, alt, className = "", sizes, priority = false, initials }: {
-  src: string | null; alt: string; className?: string; sizes: string; priority?: boolean; initials?: string;
+export function ProfileImage({ src, alt, className = "", sizes, priority = false, initials, fit = "cover" }: {
+  src: string | null; alt: string; className?: string; sizes: string; priority?: boolean; initials?: string; fit?: "cover" | "contain";
 }) {
   const [failedSource, setFailedSource] = useState<string | null>(null);
   return (
     <div className={`relative overflow-hidden bg-[#f0e8da] ${className}`}>
       {src && failedSource !== src ? (
         <Image src={src} alt={alt} fill sizes={sizes} priority={priority}
-          className="object-cover" onError={() => setFailedSource(src)} />
+          className={fit === "contain" ? "object-contain" : "object-cover"} onError={() => setFailedSource(src)} />
       ) : (
         <div className="flex h-full flex-col items-center justify-center gap-2 p-4 text-hutan/65">
           {initials ? <span role="img" aria-label={alt} className="font-serif text-3xl">{initials}</span> : <>

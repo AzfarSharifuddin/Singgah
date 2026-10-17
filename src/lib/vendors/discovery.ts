@@ -39,20 +39,37 @@ function publicVendorQuery(count?: "exact") {
 
 type VendorRow = QueryData<ReturnType<typeof publicVendorQuery>>[number];
 
-async function withVendorRatings(vendors: VendorRow[]) {
+async function withVendorCardDetails(vendors: VendorRow[]) {
   const client = createServerSupabaseClient();
-  const summaries = vendors.length ? await client.from("vendor_rating_summaries")
-    .select("vendor_id,average_rating,review_count").in("vendor_id", vendors.map((vendor) => vendor.id)) : { data: [], error: null };
+  const ids = vendors.map((vendor) => vendor.id);
+  const [summaries, logos] = vendors.length ? await Promise.all([
+    client.from("vendor_rating_summaries").select("vendor_id,average_rating,review_count").in("vendor_id", ids),
+    client.from("vendor_images").select("vendor_id,storage_path,alt_text")
+      .in("vendor_id", ids).eq("image_type", "logo").eq("is_public", true),
+  ]) : [{ data: [], error: null }, { data: [], error: null }];
   if (summaries.error) throw new Error("Unable to load vendor ratings.");
   const ratings = new Map(summaries.data?.map((rating) => [rating.vendor_id, rating]));
-  return vendors.map((vendor) => ({ ...vendor, rating: ratings.get(vendor.id) ?? null }));
+  // Sign only this result page's public logos, in one Storage request. No shared
+  // URL cache: private bucket permissions and the existing ten-minute TTL remain.
+  const allowed = (logos.error ? [] : logos.data ?? []).filter((logo) =>
+    ids.includes(logo.vendor_id) && logo.storage_path.startsWith(`vendors/${logo.vendor_id}/`));
+  const signed = allowed.length ? await client.storage.from("vendor-media")
+    .createSignedUrls(allowed.map((logo) => logo.storage_path), 600) : null;
+  const urls = new Map(signed?.data?.filter((image) => !image.error && image.path && image.signedUrl)
+    .map((image) => [image.path, image.signedUrl]) ?? []);
+  const images = new Map(allowed.map((logo) => [logo.vendor_id, logo]));
+  return vendors.map((vendor) => {
+    const image = images.get(vendor.id);
+    const url = image ? urls.get(image.storage_path) : null;
+    return { ...vendor, rating: ratings.get(vendor.id) ?? null, logo: url ? { url, alt: image?.alt_text || `${vendor.name} logo` } : null };
+  });
 }
 
 // The homepage needs three cards, not a counted twelve-row discovery page.
 export async function getLatestVendors() {
   const result = await publicVendorQuery().order("created_at", { ascending: false }).order("id").limit(3);
   if (result.error) throw new Error("Unable to find vendors.");
-  return withVendorRatings(result.data);
+  return withVendorCardDetails(result.data);
 }
 
 export async function discoverVendors(filters: DiscoveryFilters, options: DiscoveryOptions) {
@@ -75,7 +92,7 @@ export async function discoverVendors(filters: DiscoveryFilters, options: Discov
   if (result.error?.code === "PGRST103") result = await query.range(0, DISCOVERY_PAGE_SIZE - 1);
   if (result.error) throw new Error("Unable to find vendors.");
   return {
-    vendors: await withVendorRatings(result.data),
+    vendors: await withVendorCardDetails(result.data),
     count: result.count ?? 0,
     pages: Math.max(1, Math.ceil((result.count ?? 0) / DISCOVERY_PAGE_SIZE)),
   };

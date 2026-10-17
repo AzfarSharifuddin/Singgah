@@ -93,12 +93,47 @@ test("homepage requests only three public vendors without an exact count, with b
   assert.deepEqual(steps.filter(([method]) => method === "order"), [["order", "created_at", { ascending: false }], ["order", "id"]]);
   assert.ok(steps.some(([method, limit]) => method === "limit" && limit === 3));
   assert.equal(steps.find(([method]) => method === "select")[2].count, undefined);
-  assert.equal(f.calls.length, 2);
+  assert.equal(f.calls.length, 3);
   assert.deepEqual(querySteps(f, "vendor_rating_summaries").at(-1), ["in", "vendor_id", ["a", "b"]]);
   assert.equal(vendors[0].rating.average_rating, 4.5);
   assert.equal(vendors[1].rating, null);
   await getLatestVendors();
-  assert.equal(f.calls.length, 4, "vendor rows/ratings are not shared-cache entries");
+  assert.equal(f.calls.length, 6, "vendor rows/ratings/media are not shared-cache entries");
+});
+
+test("card logos use one public metadata query and one signing batch for the result page", async () => {
+  const paths = ["vendors/a/logo/a.webp", "vendors/b/logo/b.webp"];
+  const f = fixture({ vendors: ok([row("a"), row("b"), row("c")]), vendor_rating_summaries: ok([]), vendor_images: ok([
+    { vendor_id: "a", storage_path: paths[0], alt_text: "A business logo" },
+    { vendor_id: "b", storage_path: paths[1], alt_text: null },
+    { vendor_id: "c", storage_path: "vendors/other/logo/foreign.webp" },
+    { vendor_id: "not-requested", storage_path: "vendors/not-requested/logo/photo.webp" },
+  ]) }, ok([{ path: paths[0], signedUrl: "https://example.invalid/a" }, { path: paths[1], signedUrl: "https://example.invalid/b" }]));
+  const result = await load("../src/lib/vendors/discovery.ts", f.modules).getLatestVendors();
+  assert.equal(f.calls.filter((call) => call.table === "vendor_images").length, 1);
+  assert.deepEqual(querySteps(f, "vendor_images").slice(1), [["in", "vendor_id", ["a", "b", "c"]], ["eq", "image_type", "logo"], ["eq", "is_public", true]]);
+  const signing = f.calls.filter((call) => call.table === "sign");
+  assert.equal(signing.length, 1); assert.equal(signing[0].ttl, 600);
+  assert.deepEqual([...signing[0].paths], paths);
+  assert.equal(result[0].logo.alt, "A business logo");
+  assert.equal(result[1].logo.alt, "Vendor b logo");
+  assert.equal(result[2].logo, null);
+});
+
+test("missing/denied/failed logos retain cards and ratings; empty results skip all extra I/O", async () => {
+  for (const [images, signing] of [
+    [ok([]), ok([])],
+    [{ data: null, error: { code: "unavailable" } }, ok([])],
+    [ok([{ vendor_id: "a", storage_path: "vendors/a/logo/missing.webp" }]), { data: null, error: { message: "denied" } }],
+    [ok([{ vendor_id: "a", storage_path: "vendors/a/logo/missing.webp" }]), ok([{ path: "vendors/a/logo/missing.webp", error: "missing", signedUrl: "" }])],
+  ]) {
+    const f = fixture({ vendors: ok([row("a")]), vendor_images: images, vendor_rating_summaries: ok([{ vendor_id: "a", average_rating: 5, review_count: 1 }]) }, signing);
+    const result = await load("../src/lib/vendors/discovery.ts", f.modules).getLatestVendors();
+    assert.equal(result[0].logo, null); assert.equal(result[0].rating.review_count, 1);
+  }
+  const empty = fixture({ vendors: ok([]) });
+  assert.equal((await load("../src/lib/vendors/discovery.ts", empty.modules).getLatestVendors()).length, 0);
+  assert.equal(empty.calls.length, 1);
 });
 
 test("discovery preserves AND filters, literal search, count and twelve-item pagination", async () => {
