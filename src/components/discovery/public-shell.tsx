@@ -33,9 +33,6 @@ export function PublicShell({ children }: { children: React.ReactNode }) {
               className="inline-flex min-h-11 items-center whitespace-nowrap rounded-full border border-hutan/20 px-3 text-sm hover:bg-hutan hover:text-white sm:px-5"
             >
               Explore vendors
-              <span aria-hidden="true" className="ml-2">
-                ↗
-              </span>
             </Link>
 
             <Link

@@ -14,6 +14,6 @@ export function ContactActions({ vendor }: { vendor: PublicVendor }) {
   ].filter((link): link is { label: string; href: string } => Boolean(link.href));
   if (!links.length) return null;
   return <section aria-label="Contact vendor" className="flex flex-wrap gap-2">
-    {links.map(({ label, href }) => <a key={label} href={href} rel="noopener noreferrer" className="inline-flex min-h-11 items-center rounded-full border border-hutan/20 px-5 text-sm font-medium transition-colors hover:bg-hutan hover:text-white">{label}<span aria-hidden="true" className="ml-3">↗</span></a>)}
+    {links.map(({ label, href }) => <a key={label} href={href} rel="noopener noreferrer" className="inline-flex min-h-11 items-center rounded-full border border-hutan/20 px-5 text-sm font-medium transition-colors hover:bg-hutan hover:text-white">{label}</a>)}
   </section>;
 }

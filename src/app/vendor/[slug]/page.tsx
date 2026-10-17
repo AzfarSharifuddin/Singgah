@@ -79,7 +79,7 @@ async function ProfileDetails({ vendor, reviewPage, sort }: { vendor: PublicVend
           <address className="not-italic text-sm leading-7">{vendor.address && <p className="mb-2">{vendor.address}</p>}<p className="font-semibold">{locality}</p><p>{vendor.state.name}, Malaysia</p></address>
           {!vendor.address && <p className="mt-3 text-xs leading-5 text-[#5d665f]">A street address hasn’t been added yet.</p>}
           {vendor.location_notes && <p className="mt-4 whitespace-pre-line text-sm leading-6 text-[#5d665f]">{vendor.location_notes}</p>}
-          {mapUrl && <a className="mt-5 inline-flex min-h-11 items-center text-sm font-semibold underline underline-offset-4" href={mapUrl} rel="noopener noreferrer">Open in Google Maps <span aria-hidden="true" className="ml-2">↗</span></a>}
+          {mapUrl && <a className="mt-5 inline-flex min-h-11 items-center text-sm font-semibold underline underline-offset-4" href={mapUrl} rel="noopener noreferrer">Open in Google Maps</a>}
         </section>
         <section aria-labelledby="share-heading" className="rounded-2xl bg-hutan p-6 text-white"><span aria-hidden="true" className="text-2xl text-rembulan">✳</span><h2 id="share-heading" className="mt-3 font-serif text-2xl">Been here? Tell the story.</h2><p className="mt-3 text-sm leading-6 text-rembulan">Your experience can help someone find their next local favourite.</p><Link href={`/vendor/${vendor.slug}/review`} className="mt-5 flex min-h-12 w-full items-center justify-center rounded-xl bg-rembulan px-4 text-sm font-semibold text-hutan">Leave a Review</Link><p className="mt-3 text-center text-xs text-rembulan">No signup needed. Just your experience.</p></section>
       </aside>
