@@ -30,3 +30,29 @@ body {
   outline: 3px solid var(--terracotta);
   outline-offset: 4px;
 }
+
+/* Small local vectors carry the heritage accents; content and controls stay clear. */
+.brand-hero {
+  background-image: radial-gradient(ellipse at 18% 20%, #2a503d 0%, transparent 65%);
+}
+
+.brand-floral {
+  width: min(48vw, 34rem);
+  background: url("/brand/floral-corner.svg") no-repeat right top;
+  background-size: contain;
+  opacity: 0.48;
+}
+
+.brand-batik {
+  background: #e9d7b7 url("/brand/batik-border.svg") repeat-x center;
+  background-size: 72px 16px;
+}
+
+@media (max-width: 639px) {
+  .brand-floral {
+    top: -1.5rem;
+    right: -1.5rem;
+    width: 17rem;
+    opacity: 0.23;
+  }
+}

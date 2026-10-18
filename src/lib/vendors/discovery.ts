@@ -42,26 +42,32 @@ type VendorRow = QueryData<ReturnType<typeof publicVendorQuery>>[number];
 async function withVendorCardDetails(vendors: VendorRow[]) {
   const client = createServerSupabaseClient();
   const ids = vendors.map((vendor) => vendor.id);
-  const [summaries, logos] = vendors.length ? await Promise.all([
+  const [summaries, media] = vendors.length ? await Promise.all([
     client.from("vendor_rating_summaries").select("vendor_id,average_rating,review_count").in("vendor_id", ids),
-    client.from("vendor_images").select("vendor_id,storage_path,alt_text")
-      .in("vendor_id", ids).eq("image_type", "logo").eq("is_public", true),
+    client.from("vendor_images").select("vendor_id,storage_path,alt_text,image_type")
+      .in("vendor_id", ids).in("image_type", ["logo", "cover"]).eq("is_public", true),
   ]) : [{ data: [], error: null }, { data: [], error: null }];
   if (summaries.error) throw new Error("Unable to load vendor ratings.");
   const ratings = new Map(summaries.data?.map((rating) => [rating.vendor_id, rating]));
-  // Sign only this result page's public logos, in one Storage request. No shared
+  // Sign only this result page's public logos/covers, in one Storage request. No shared
   // URL cache: private bucket permissions and the existing ten-minute TTL remain.
-  const allowed = (logos.error ? [] : logos.data ?? []).filter((logo) =>
-    ids.includes(logo.vendor_id) && logo.storage_path.startsWith(`vendors/${logo.vendor_id}/`));
+  const allowed = (media.error ? [] : media.data ?? []).filter((image) =>
+    ids.includes(image.vendor_id) && ["logo", "cover"].includes(image.image_type) && image.storage_path.startsWith(`vendors/${image.vendor_id}/`));
   const signed = allowed.length ? await client.storage.from("vendor-media")
-    .createSignedUrls(allowed.map((logo) => logo.storage_path), 600) : null;
+    .createSignedUrls([...new Set(allowed.map((image) => image.storage_path))], 600) : null;
   const urls = new Map(signed?.data?.filter((image) => !image.error && image.path && image.signedUrl)
     .map((image) => [image.path, image.signedUrl]) ?? []);
-  const images = new Map(allowed.map((logo) => [logo.vendor_id, logo]));
+  const logos = new Map(allowed.filter((image) => image.image_type === "logo").map((image) => [image.vendor_id, image]));
+  const covers = new Map(allowed.filter((image) => image.image_type === "cover").map((image) => [image.vendor_id, image]));
   return vendors.map((vendor) => {
-    const image = images.get(vendor.id);
-    const url = image ? urls.get(image.storage_path) : null;
-    return { ...vendor, rating: ratings.get(vendor.id) ?? null, logo: url ? { url, alt: image?.alt_text || `${vendor.name} logo` } : null };
+    const logo = logos.get(vendor.id);
+    const cover = covers.get(vendor.id);
+    const logoUrl = logo ? urls.get(logo.storage_path) : null;
+    const coverUrl = cover ? urls.get(cover.storage_path) : null;
+    return { ...vendor, rating: ratings.get(vendor.id) ?? null,
+      logo: logoUrl ? { url: logoUrl, alt: logo?.alt_text || `${vendor.name} logo` } : null,
+      cover: coverUrl ? { url: coverUrl, alt: cover?.alt_text || `${vendor.name} cover photo` } : null,
+    };
   });
 }
 

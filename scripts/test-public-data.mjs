@@ -101,31 +101,36 @@ test("homepage requests only three public vendors without an exact count, with b
   assert.equal(f.calls.length, 6, "vendor rows/ratings/media are not shared-cache entries");
 });
 
-test("card logos use one public metadata query and one signing batch for the result page", async () => {
-  const paths = ["vendors/a/logo/a.webp", "vendors/b/logo/b.webp"];
+test("card logos and covers share one public metadata query and signing batch", async () => {
+  const paths = ["vendors/a/logo/a.webp", "vendors/b/logo/b.webp", "vendors/c/cover/c.webp"];
   const f = fixture({ vendors: ok([row("a"), row("b"), row("c")]), vendor_rating_summaries: ok([]), vendor_images: ok([
-    { vendor_id: "a", storage_path: paths[0], alt_text: "A business logo" },
-    { vendor_id: "b", storage_path: paths[1], alt_text: null },
-    { vendor_id: "c", storage_path: "vendors/other/logo/foreign.webp" },
-    { vendor_id: "not-requested", storage_path: "vendors/not-requested/logo/photo.webp" },
-  ]) }, ok([{ path: paths[0], signedUrl: "https://example.invalid/a" }, { path: paths[1], signedUrl: "https://example.invalid/b" }]));
+    { image_type: "logo", vendor_id: "a", storage_path: paths[0], alt_text: "A business logo" },
+    { image_type: "logo", vendor_id: "b", storage_path: paths[1], alt_text: null },
+    { image_type: "logo", vendor_id: "c", storage_path: "vendors/other/logo/foreign.webp" },
+    { image_type: "logo", vendor_id: "not-requested", storage_path: "vendors/not-requested/logo/photo.webp" },
+    { image_type: "cover", vendor_id: "c", storage_path: paths[2], alt_text: null },
+    { image_type: "gallery", vendor_id: "c", storage_path: "vendors/c/gallery/not-a-cover.webp" },
+  ]) }, ok([{ path: paths[0], signedUrl: "https://example.invalid/a" }, { path: paths[1], signedUrl: "https://example.invalid/b" }, { path: paths[2], signedUrl: "https://example.invalid/cover" }]));
   const result = await load("../src/lib/vendors/discovery.ts", f.modules).getLatestVendors();
   assert.equal(f.calls.filter((call) => call.table === "vendor_images").length, 1);
-  assert.deepEqual(querySteps(f, "vendor_images").slice(1), [["in", "vendor_id", ["a", "b", "c"]], ["eq", "image_type", "logo"], ["eq", "is_public", true]]);
+  assert.deepEqual(querySteps(f, "vendor_images").slice(1), [["in", "vendor_id", ["a", "b", "c"]], ["in", "image_type", ["logo", "cover"]], ["eq", "is_public", true]]);
   const signing = f.calls.filter((call) => call.table === "sign");
   assert.equal(signing.length, 1); assert.equal(signing[0].ttl, 600);
   assert.deepEqual([...signing[0].paths], paths);
   assert.equal(result[0].logo.alt, "A business logo");
   assert.equal(result[1].logo.alt, "Vendor b logo");
   assert.equal(result[2].logo, null);
+  assert.equal(result[2].cover.url, "https://example.invalid/cover");
+  assert.equal(result[2].cover.alt, "Vendor c cover photo");
+  assert.equal(result[0].cover, null);
 });
 
 test("missing/denied/failed logos retain cards and ratings; empty results skip all extra I/O", async () => {
   for (const [images, signing] of [
     [ok([]), ok([])],
     [{ data: null, error: { code: "unavailable" } }, ok([])],
-    [ok([{ vendor_id: "a", storage_path: "vendors/a/logo/missing.webp" }]), { data: null, error: { message: "denied" } }],
-    [ok([{ vendor_id: "a", storage_path: "vendors/a/logo/missing.webp" }]), ok([{ path: "vendors/a/logo/missing.webp", error: "missing", signedUrl: "" }])],
+    [ok([{ image_type: "logo", vendor_id: "a", storage_path: "vendors/a/logo/missing.webp" }]), { data: null, error: { message: "denied" } }],
+    [ok([{ image_type: "logo", vendor_id: "a", storage_path: "vendors/a/logo/missing.webp" }]), ok([{ path: "vendors/a/logo/missing.webp", error: "missing", signedUrl: "" }])],
   ]) {
     const f = fixture({ vendors: ok([row("a")]), vendor_images: images, vendor_rating_summaries: ok([{ vendor_id: "a", average_rating: 5, review_count: 1 }]) }, signing);
     const result = await load("../src/lib/vendors/discovery.ts", f.modules).getLatestVendors();

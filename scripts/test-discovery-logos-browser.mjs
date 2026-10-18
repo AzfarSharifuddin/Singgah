@@ -30,7 +30,7 @@ try {
     await page.setViewportSize({ width, height: 1000 });
     await page.goto(`${base}/discover?q=${encodeURIComponent(vendor.name)}`, { waitUntil: "networkidle" });
     const card = page.getByRole("link", { name: `View ${vendor.name}`, exact: true });
-    const image = card.locator("img");
+    const image = card.locator('img[sizes="56px"]');
     await image.waitFor(); await image.evaluate((image) => image.decode());
     const source = new URL(await image.evaluate((image) => image.currentSrc), base);
     assert.equal(source.pathname, "/_next/image");
@@ -49,7 +49,7 @@ try {
     console.log(`PASS: ${width}px discovery uses a real optimized 56px logo and links to the vendor.`);
   }
   await page.goto(base, { waitUntil: "networkidle" });
-  const homeImages = page.locator("main article img");
+  const homeImages = page.locator('main article img[sizes="56px"]');
   assert.ok(await homeImages.count(), "homepage cards also display business logos");
   await homeImages.first().evaluate((image) => image.decode());
 
@@ -64,7 +64,7 @@ try {
   const card = page.getByRole("link", { name: `View ${vendor.name}`, exact: true });
   const initials = vendor.name.split(/\s+/).slice(0, 2).map((word) => word[0]).join("");
   await card.locator('span[role="img"]').filter({ hasText: initials }).waitFor();
-  assert.equal(await card.locator("img").count(), 0);
+  assert.equal(await card.locator('img[sizes="56px"]').count(), 0);
   assert.equal(await card.getAttribute("href"), `/vendor/${vendor.slug}`);
   assert.deepEqual(errors, []);
   console.log("PASS: homepage logo, broken-image initials fallback, unchanged profile link and no runtime/console errors. No hosted writes.");

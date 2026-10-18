@@ -41,15 +41,17 @@ that changes route-level caching conventions and is outside this maintenance pas
 
 ## Image delivery
 
-Discovery and homepage cards now use the real business logo when available,
+Discovery and homepage cards now use the real business logo and cover when available,
 with initials for absent or broken images. A page makes one public logo-metadata
 query in parallel with its rating query, then one batch Storage signing request
-for the returned logos. This adds at most two upstream requests per result page,
+for the returned logos and covers. This adds at most two upstream requests per result page,
 not two per vendor. A warm page with logos therefore uses four upstream requests
-(vendors, ratings, logo metadata and batch signing), versus the historical two-read
+(vendors, ratings, media metadata and batch signing), versus the historical two-read
 measurement below before logos were displayed. Without logo records, signing is
 skipped. Empty results skip both extra requests. URLs are not shared-cache entries.
-The fixed 56px image slot uses Next.js responsive thumbnails and lazy loading.
+The fixed 56px logo slot uses Next.js responsive thumbnails. Covers use a 12:5
+frame and responsive sizes; only the first discovery cover is prioritised. Other
+cover images remain lazy. See [the visual refresh](brand-refresh.md) for asset details.
 
 Logo regressions: `node --test scripts/test-public-data.mjs` and, with a running
 app plus an existing public vendor/logo, `node scripts/test-discovery-logos-browser.mjs`.

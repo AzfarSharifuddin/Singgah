@@ -1,0 +1,12 @@
+<svg xmlns="http://www.w3.org/2000/svg" width="144" height="32" viewBox="0 0 144 32">
+  <path fill="#E9D7B7" d="M0 0h144v32H0z"/>
+  <path fill="none" stroke="#B7904F" stroke-width="1" d="M0 1h144M0 31h144M0 16 24 0l24 16-24 16ZM48 16 72 0l24 16-24 16ZM96 16 120 0l24 16-24 16Z"/>
+  <defs>
+    <g id="tile">
+      <path fill="#1B3D2E" d="M24 14C13 12 14 5 17 4c5 0 7 4 7 10ZM26 16c2-11 9-10 10-7 0 5-4 7-10 7ZM24 18c11 2 10 9 7 10-5 0-7-4-7-10ZM22 16C20 27 13 26 12 23c0-5 4-7 10-7Z"/>
+      <path fill="#C26A4A" d="M22 14C12 15 7 13 8 8c6-1 12 2 14 6ZM26 14C25 4 27-1 32 0c1 6-2 12-6 14ZM26 18c10-1 15 1 14 6-6 1-12-2-14-6ZM22 18c1 10-1 15-6 14-1-6 2-12 6-14Z"/>
+      <path fill="#B7904F" d="m24 12 4 4-4 4-4-4ZM0 11l5 5-5 5v-3l2-2-2-2ZM48 11v3l-2 2 2 2v3l-5-5Z"/>
+    </g>
+  </defs>
+  <use href="#tile"/><use href="#tile" x="48"/><use href="#tile" x="96"/>
+</svg>
