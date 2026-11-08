@@ -25,21 +25,26 @@ test("URL normalization preserves valid parents and resets incompatible children
   assert.equal(discoveryUrl({ ...filters, page: 3 }).includes("state=johor"), true);
 });
 
-test("hosted public queries: literal search and disjoint pagination without changing fixtures", async () => {
+test("hosted public queries: literal search and disjoint pagination against current public data", async () => {
   if (existsSync(".env.local")) process.loadEnvFile(".env.local");
   const { url, key } = getSupabaseConfig();
   const client = createClient<Database>(url, key, { auth: { persistSession: false, autoRefreshToken: false } });
-  for (const [q, expected] of [["AISYAH", 1], ["Fictional development", 5], ["%", 0], ["_", 0], ['\",status.eq.draft)', 0], ["\\", 0]] as const) {
+  const baseline = await client.from("vendors").select("id,name,description").eq("status", "published").eq("is_active", true).order("name").order("id");
+  assert.equal(baseline.error, null);
+  const current = baseline.data!;
+  const searches = [current[0]?.name.toUpperCase() ?? "no-public-vendors", "%", "_", '\",status.eq.draft)', "\\"];
+  for (const q of searches) {
+    const expected = current.filter((vendor) => [vendor.name, vendor.description ?? ""].some((value) => value.toLowerCase().includes(q.toLowerCase()))).length;
     const result = await client.from("vendors").select("id,name").eq("status", "published").eq("is_active", true).or(searchExpression(q));
     assert.equal(result.error, null, `Search grammar for ${q}`); assert.equal(result.data?.length, expected, `Search result for ${q}`);
   }
   const collected: string[] = [];
-  for (const page of [1, 2, 3]) {
+  for (let page = 1; page <= Math.max(1, Math.ceil(current.length / 2)); page++) {
     const { from, to } = paginationWindow(page, 2);
     const result = await client.from("vendors").select("id,name", { count: "exact" }).eq("status", "published").eq("is_active", true).order("name").order("id").range(from, to);
-    assert.equal(result.error, null); assert.equal(result.count, 5);
-    assert.equal(result.data?.length, page === 3 ? 1 : 2);
+    assert.equal(result.error, null); assert.equal(result.count, current.length);
+    assert.deepEqual(result.data?.map((vendor) => vendor.id), current.slice(from, to + 1).map((vendor) => vendor.id));
     collected.push(...result.data!.map((vendor) => vendor.id));
   }
-  assert.equal(new Set(collected).size, 5, "No duplicated or skipped vendors across page windows");
+  assert.equal(new Set(collected).size, current.length, "No duplicated or skipped vendors across page windows");
 });

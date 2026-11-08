@@ -51,7 +51,10 @@ try {
   await page.goto(base, { waitUntil: "networkidle" });
   const homeImages = page.locator('main article img[sizes="56px"]');
   assert.ok(await homeImages.count(), "homepage cards also display business logos");
-  await homeImages.first().evaluate((image) => image.decode());
+  await page.waitForFunction(() => {
+    const image = document.querySelector('main article img[sizes="56px"]');
+    return image?.complete && image.naturalWidth > 0;
+  });
 
   // Simulate a corrupt image response, without changing any hosted files or rows.
   await page.route("**/_next/image?**", async (route) => {

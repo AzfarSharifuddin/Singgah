@@ -31,6 +31,40 @@ body {
   outline-offset: 4px;
 }
 
+/* Homepage only: photograph-led opening and a native, keyboard-accessible strip. */
+.home-editorial {
+  --font-serif: var(--font-editorial), Georgia, "Times New Roman", serif;
+  font-family: var(--font-serif);
+}
+
+.home-editorial nav,
+.home-action,
+.home-label,
+.home-control {
+  font-family: "Courier New", Courier, monospace;
+}
+
+.home-opening-photo {
+  object-position: 58% center;
+}
+
+.home-opening-title {
+  text-shadow: 0 2px 8px rgb(0 0 0 / 80%);
+}
+
+.home-categories {
+  scroll-snap-type: x proximity;
+  scroll-padding-inline: 1.5rem;
+  scrollbar-width: thin;
+  scrollbar-color: var(--emas) transparent;
+}
+
+@media (min-width: 640px) {
+  .home-opening-photo {
+    object-position: center 58%;
+  }
+}
+
 /* Small local vectors carry the heritage accents; content and controls stay clear. */
 .brand-hero {
   background-image: radial-gradient(ellipse at 18% 20%, #2a503d 0%, transparent 65%);

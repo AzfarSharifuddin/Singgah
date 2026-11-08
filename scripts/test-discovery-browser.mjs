@@ -23,8 +23,10 @@ try {
     await noOverflow();
     if (process.env.SCREENSHOT_DIR) await page.screenshot({ path: `${process.env.SCREENSHOT_DIR}/home-${width}.png`, fullPage: true });
     assert.match(await page.locator('meta[name="robots"]').getAttribute("content"), /index, follow/);
+    await page.getByRole("link", { name: "Explore Singgah", exact: true }).click();
+    await page.waitForURL(base + "/discover");
     await page.getByLabel("Search vendors", { exact: true }).fill("Aisyah");
-    await page.getByRole("button", { name: "Explore Singgah" }).click();
+    await page.getByRole("button", { name: "Search", exact: true }).click();
     await page.waitForURL(/q=Aisyah/); await count(1);
     await visit("/discover"); await count(5); await noOverflow();
     assert.match(await page.locator('meta[name="robots"]').getAttribute("content"), /noindex, follow/);

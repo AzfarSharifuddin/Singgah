@@ -1,9 +1,9 @@
 import { PublicFooter } from "@/components/public-footer";
 import Link from "next/link";
 
-export function PublicShell({ children }: { children: React.ReactNode }) {
+export function PublicShell({ children, editorial = false, className = "" }: { children: React.ReactNode; editorial?: boolean; className?: string }) {
   return (
-    <div className="min-h-svh bg-[#faf8f3] text-hutan [overflow-wrap:anywhere]">
+    <div className={`min-h-svh bg-[#faf8f3] text-hutan [overflow-wrap:anywhere] ${editorial ? "home-editorial" : ""} ${className}`}>
       <a
         href="#main"
         className="sr-only focus:not-sr-only focus:absolute focus:z-50 focus:bg-white focus:p-4"
@@ -12,11 +12,11 @@ export function PublicShell({ children }: { children: React.ReactNode }) {
       </a>
 
       <header className="border-b border-hutan/10">
-        <div className="mx-auto flex max-w-6xl flex-col gap-3 px-5 py-4 sm:flex-row sm:items-center sm:justify-between sm:px-8">
+        <div className={editorial ? "mx-auto flex max-w-7xl items-center justify-between gap-3 px-6 py-3 sm:px-8 sm:py-5" : "mx-auto flex max-w-6xl flex-col gap-3 px-5 py-4 sm:flex-row sm:items-center sm:justify-between sm:px-8"}>
           <Link
             href="/"
             aria-label="Singgah home"
-            className="inline-flex min-h-11 items-center text-xl font-bold tracking-[0.16em]"
+            className="inline-flex min-h-11 items-center font-sans text-xl font-bold tracking-[0.16em]"
           >
             SINGGAH
             <span aria-hidden="true" className="text-terracotta">
@@ -26,18 +26,18 @@ export function PublicShell({ children }: { children: React.ReactNode }) {
 
           <nav
             aria-label="Main navigation"
-            className="flex flex-wrap items-center gap-2"
+            className={editorial ? "flex flex-wrap items-center gap-4" : "flex flex-wrap items-center gap-2"}
           >
             <Link
               href="/discover"
-              className="inline-flex min-h-11 items-center whitespace-nowrap rounded-full border border-hutan/20 px-3 text-sm hover:bg-hutan hover:text-white sm:px-5"
+              className={editorial ? "inline-flex min-h-11 items-center text-sm underline-offset-4 hover:underline" : "inline-flex min-h-11 items-center whitespace-nowrap rounded-full border border-hutan/20 px-3 text-sm hover:bg-hutan hover:text-white sm:px-5"}
             >
-              Explore vendors
+              {editorial ? "Discover" : "Explore vendors"}
             </Link>
 
             <Link
               href="/vendor/register"
-              className="inline-flex min-h-11 items-center whitespace-nowrap rounded-full border border-hutan/20 px-3 text-sm hover:bg-hutan hover:text-white sm:px-5"
+              className={editorial ? "inline-flex min-h-11 items-center text-sm underline-offset-4 hover:underline sm:ml-6" : "inline-flex min-h-11 items-center whitespace-nowrap rounded-full border border-hutan/20 px-3 text-sm hover:bg-hutan hover:text-white sm:px-5"}
             >
               For vendors
             </Link>
@@ -47,7 +47,7 @@ export function PublicShell({ children }: { children: React.ReactNode }) {
 
       {children}
 
-      <PublicFooter />
+      <PublicFooter quiet={editorial} />
     </div>
   );
 }
