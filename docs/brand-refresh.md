@@ -21,6 +21,13 @@ The footer retains FAQ and terms. Full search, city/area filtering, sorting and
 pagination stay on `/discover`. Categories and destinations remain database-driven.
 The homepage adds no client component, custom carousel library or new dependency.
 
+Full-width background bands distinguish the sections without adding decorative
+boxes: introduction/latest vendors/footer stay ivory, categories use pale
+Rembulan (`#f1e7d6`), destinations use soft cream (`#f5eee3`), and the closing
+vendor invitation uses Hutan with Rembulan text and a cream action button.
+Content widths remain constrained inside each full-width band. The opening
+photograph, typography, data and destinations are unchanged.
+
 ## Typography
 
 The reference uses EB Garamond for its large editorial text and Courier for small
