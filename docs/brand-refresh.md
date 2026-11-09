@@ -90,7 +90,13 @@ part of this design implementation.
   server query helpers, count, sorting and pagination URLs are unchanged.
   Result cards and input text retain Arial for small-text readability.
 - Registration and sign-in share `VendorAuthLayout`: the form is first on small
-  screens and beside a neighbourhood-shop photograph on desktop. Styling is
+  screens and beside a local photograph on desktop. Both use a full-width,
+  equal two-column split: the darkened photograph fills
+  the entire left panel from below the header, with no inset margin; the form
+  stays on the right. Mobile keeps the form first and the full-width photo below.
+  Registration keeps the neighbourhood-shop photo; sign-in uses the street-cart
+  photo from `Pictures/6.jpg`. Both reuse one layout without separate variants.
+  Styling is
   scoped through `.editorial-auth`; `AuthForm`, `ActionForm`, server actions,
   password rules, CAPTCHA instance/options and session behaviour are untouched.
 - FAQ uses native keyboard-accessible `details`/`summary` elements to reduce the
@@ -109,6 +115,7 @@ New derivatives in `public/images/editorial/`:
 | `Pictures/9.jpg` | `market.webp` | 1600px | 75 | 122,118 | Discovery background |
 | `Pictures/8.jpg` | `neighbourhood-shop.webp` | 800px | 74 | 173,430 | Registration/sign-in |
 | `Pictures/7.jpg` | `heritage-street.webp` | 1600px | 75 | 174,488 | FAQ background |
+| `Pictures/6.jpg` | `street-cart-portrait.webp` | 900 × 1200px | 74 | 165,258 | Sign-in panel |
 
 Originals are untouched, and no image is used as a fictitious business listing.
 The other new supplied photos remain available for later use. The source photos
