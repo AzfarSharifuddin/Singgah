@@ -3,7 +3,7 @@ import Link from "next/link";
 
 export function PublicShell({ children, editorial = false, className = "" }: { children: React.ReactNode; editorial?: boolean; className?: string }) {
   return (
-    <div className={`min-h-svh bg-[#faf8f3] text-hutan [overflow-wrap:anywhere] ${editorial ? "home-editorial" : ""} ${className}`}>
+    <div className={`min-h-svh bg-[#faf8f3] text-hutan [overflow-wrap:anywhere] ${editorial ? "editorial-surface" : ""} ${className}`}>
       <a
         href="#main"
         className="sr-only focus:not-sr-only focus:absolute focus:z-50 focus:bg-white focus:p-4"

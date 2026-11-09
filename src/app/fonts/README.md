@@ -1,10 +1,12 @@
-# Homepage editorial font
+# Public editorial font
 
 `eb-garamond-latin-regular.woff2` is EB Garamond, normal 400, Latin subset,
-23,820 bytes. It is bundled locally using `next/font/local` in the homepage
-module, with `font-display: swap`. No Google/Adobe font requests are made by a
-visitor's browser. Other application routes retain their existing typography;
-the SINGGAH wordmark and functional card details retain Arial.
+23,820 bytes. It is bundled locally using `next/font/local` in the shared
+`src/components/brand/editorial-shell.tsx` module, with `font-display: swap`.
+The homepage, discovery, vendor registration/sign-in, FAQ and terms reuse this
+shell. No Google/Adobe font requests are made by a visitor's browser. Other
+application routes retain their existing typography; the SINGGAH wordmark and
+functional card details retain Arial.
 
 The reference website uses the EB Garamond family for large editorial text and
 Courier for small navigation labels. Singgah uses the open-source Google Fonts

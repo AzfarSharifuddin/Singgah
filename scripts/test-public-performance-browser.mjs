@@ -144,6 +144,8 @@ try {
   const expected = await read(vendorQuery().order("name").order("id").range(0, 11));
   assert.deepEqual(await resultNames(), expected.data.map((row) => row.name));
   await visit("/discover?category=invalid&state=invalid&page=999999");
+  // A streamed redirect can settle after the first response reaches networkidle.
+  await page.waitForURL((value) => value.pathname === "/discover" && !value.searchParams.has("category") && !value.searchParams.has("state") && value.searchParams.get("page") === (expected.count > 12 ? String(Math.ceil(expected.count / 12)) : null));
   assert.equal(new URL(page.url()).searchParams.get("category"), null);
   assert.equal(new URL(page.url()).searchParams.get("page"), expected.count > 12 ? String(Math.ceil(expected.count / 12)) : null);
   const notFound = await page.goto(base + "/vendor/performance-nonexistent-6bbadf", { waitUntil: "networkidle" });

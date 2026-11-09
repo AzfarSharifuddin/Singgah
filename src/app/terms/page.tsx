@@ -1,6 +1,6 @@
 import Link from "next/link";
 import type { Metadata } from "next";
-import { PublicShell } from "@/components/discovery/public-shell";
+import { EditorialShell } from "@/components/brand/editorial-shell";
 import { REVIEW_TERMS_VERSION } from "@/lib/reviews/terms";
 export const metadata: Metadata = { title: "Terms and conditions | Singgah", description: "The rules for using Singgah and sharing community reviews." };
 const sections = [
@@ -17,5 +17,23 @@ const sections = [
 export default async function TermsPage({ searchParams }: { searchParams: Promise<{ review?: string | string[] }> }) {
   const value = (await searchParams).review;
   const reviewSlug = typeof value === "string" && value.length <= 180 && /^[a-z0-9]+(?:-[a-z0-9]+)*$/.test(value) ? value : null;
-  return <PublicShell><main id="main" className="mx-auto max-w-3xl px-5 py-12 sm:px-8"><Link href={reviewSlug ? `/vendor/${reviewSlug}/review` : "/"} className="mb-6 inline-flex min-h-11 items-center text-sm underline underline-offset-4">← {reviewSlug ? "Back to your review" : "Back to Singgah"}</Link><h1 className="font-serif text-4xl">Terms and conditions</h1><p className="mt-4 text-sm text-[#5d665f]">Version {REVIEW_TERMS_VERSION} · Updated 27 September 2026</p><p className="mt-6 leading-7">Help keep Singgah useful, fair and welcoming for local businesses and the people who discover them.</p><div className="mt-6 space-y-8">{sections.map(([heading, text], index) => <section key={heading}><h2 className="text-xl font-semibold">{index + 1}. {heading}</h2><p className="mt-3 leading-7 text-[#46534a]">{text}</p></section>)}</div></main></PublicShell>;
+  return <EditorialShell><main id="main">
+    <div className="bg-[#f1e7d6]">
+      <div className="mx-auto max-w-3xl px-6 py-12 sm:px-8 sm:py-16">
+        <Link href={reviewSlug ? `/vendor/${reviewSlug}/review` : "/"} className="editorial-action mb-6 inline-flex min-h-11 items-center text-sm underline underline-offset-4">← {reviewSlug ? "Back to your review" : "Back to Singgah"}</Link>
+        <h1 className="font-serif text-5xl leading-[1.05] sm:text-6xl">Terms and conditions</h1>
+        <p className="editorial-label mt-5 text-xs leading-6 text-[#46534a]">Version {REVIEW_TERMS_VERSION} · Updated 27 September 2026</p>
+        <p className="mt-6 text-xl leading-relaxed sm:text-2xl">Help keep Singgah useful, fair and welcoming for local businesses and the people who discover them.</p>
+      </div>
+    </div>
+    <div className="mx-auto max-w-3xl px-6 py-12 sm:px-8 sm:py-16">
+      <nav aria-label="Terms sections" className="mb-12 border-y border-hutan/20 py-4">
+        <details className="editorial-contents group">
+          <summary className="editorial-label flex min-h-11 cursor-pointer list-none items-center justify-between text-sm">On this page<span aria-hidden="true" className="text-lg"><span className="group-open:hidden">+</span><span className="hidden group-open:inline">−</span></span></summary>
+          <ol className="grid gap-x-8 pb-3 pt-2 font-sans text-sm sm:grid-cols-2">{sections.map(([heading], index) => <li key={heading}><a href={`#terms-${index + 1}`} className="inline-flex min-h-11 items-center underline underline-offset-4">{index + 1}. {heading}</a></li>)}</ol>
+        </details>
+      </nav>
+      <div className="space-y-10 sm:space-y-12">{sections.map(([heading, text], index) => <section key={heading} id={`terms-${index + 1}`} className="scroll-mt-8"><h2 className="font-serif text-2xl leading-snug sm:text-3xl">{index + 1}. {heading}</h2><p className="mt-4 max-w-prose font-sans text-[15px] leading-8 text-[#46534a]">{text}</p></section>)}</div>
+    </div>
+  </main></EditorialShell>;
 }

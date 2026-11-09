@@ -32,10 +32,10 @@ photograph, typography, data and destinations are unchanged.
 
 The reference uses EB Garamond for its large editorial text and Courier for small
 navigation labels. Singgah now uses a self-hosted EB Garamond normal 400 Latin
-WOFF2 (23,820 bytes) through `next/font/local`, with `display: swap`. It is scoped
-to the homepage via `PublicShell editorial` and its font variable. Heading and
-editorial paragraph typography change there, while other application routes retain
-their previous fonts. Navigation, action labels and the destination control use
+WOFF2 (23,820 bytes) through `next/font/local`, with `display: swap`. The shared
+`EditorialShell` wraps the homepage, discovery, vendor registration/sign-in, FAQ
+and terms. These routes reuse one font definition and file; other application
+routes retain their previous fonts. Navigation, action labels and the destination control use
 system Courier New/Courier. Controls stay at readable sizes with 44–48px tap targets.
 
 The existing text-only SINGGAH wordmark retains its Arial weight and tracking.
@@ -74,10 +74,50 @@ preloaded; below-fold images are lazy. `fill` containers reserve dimensions and
 tile aspect ratios. The repeated street photograph shares one source asset.
 
 Public media permissions, existing ten-minute signed URL batches, upload
-processing and rating calculations are unchanged. Other screens keep their
-existing `BrandHero`, floral corner, batik strip and standard shell treatment.
+processing and rating calculations are unchanged. Public vendor profiles, review
+forms and dashboard screens retain their existing styling and behaviour.
 No migrations, hosted writes, auth, Turnstile or review-protection changes are
 part of this design implementation.
+
+## Discovery, account entry, FAQ and terms
+
+- Discovery uses a full-width market photograph behind its introduction/search
+  area on all screen sizes, white editorial text and a cream search action.
+  A dark tint maintains text readability; there is no white overlay. The image
+  is preloaded with `sizes="100vw"`; below-fold result covers stay lazy. The
+  soft-cream filter band stays below the photograph. Mobile filters
+  retain their existing toggle. The exact state/reset/normalization logic,
+  server query helpers, count, sorting and pagination URLs are unchanged.
+  Result cards and input text retain Arial for small-text readability.
+- Registration and sign-in share `VendorAuthLayout`: the form is first on small
+  screens and beside a neighbourhood-shop photograph on desktop. Styling is
+  scoped through `.editorial-auth`; `AuthForm`, `ActionForm`, server actions,
+  password rules, CAPTCHA instance/options and session behaviour are untouched.
+- FAQ uses native keyboard-accessible `details`/`summary` elements to reduce the
+  initial text density. The first answer starts open. All 11 questions and answers
+  are preserved verbatim. A full-width heritage street photo sits behind the
+  white heading/intro, matching discovery's dark readability tint. It is
+  preloaded with responsive sizing; the answers remain on ivory below.
+- Terms keeps all nine sections, version and displayed update date unchanged.
+  A compact native contents disclosure links to stable in-page section anchors.
+  Review-return links retain the existing slug validation and safe fallback.
+
+New derivatives in `public/images/editorial/`:
+
+| Source | Web asset | Width | WebP quality | Bytes | Use |
+| --- | --- | --- | --- | --- | --- |
+| `Pictures/9.jpg` | `market.webp` | 1600px | 75 | 122,118 | Discovery background |
+| `Pictures/8.jpg` | `neighbourhood-shop.webp` | 800px | 74 | 173,430 | Registration/sign-in |
+| `Pictures/7.jpg` | `heritage-street.webp` | 1600px | 75 | 174,488 | FAQ background |
+
+Originals are untouched, and no image is used as a fictitious business listing.
+The other new supplied photos remain available for later use. The source photos
+are several megabytes each; the application requests responsive Next Image
+derivatives, not the originals.
+
+Visual verification does not submit registrations, send confirmation mail or
+solve CAPTCHA challenges. Missing local Turnstile configuration remains visible
+through the existing form warning; no keys or bypasses are added for styling.
 
 ## Verification
 

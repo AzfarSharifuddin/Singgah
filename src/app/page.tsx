@@ -1,20 +1,10 @@
 import type { Metadata } from "next";
 import Image from "next/image";
 import Link from "next/link";
-import localFont from "next/font/local";
 import { getLatestVendors, getDiscoveryOptions } from "@/lib/vendors/discovery";
 import { discoveryUrl } from "@/lib/vendors/discovery-params";
 import { VendorCard } from "@/components/discovery/vendor-card";
-import { PublicShell } from "@/components/discovery/public-shell";
-
-const editorialFont = localFont({
-  src: "./fonts/eb-garamond-latin-regular.woff2",
-  variable: "--font-editorial",
-  weight: "400",
-  style: "normal",
-  display: "swap",
-  fallback: ["Georgia", "Times New Roman", "serif"],
-});
+import { EditorialShell } from "@/components/brand/editorial-shell";
 
 export const dynamic = "force-dynamic";
 export const metadata: Metadata = {
@@ -40,7 +30,7 @@ export default async function Home() {
   const [options, latest] = await Promise.all([getDiscoveryOptions(), getLatestVendors()]);
 
   return (
-    <PublicShell editorial className={editorialFont.variable}>
+    <EditorialShell>
       <main id="main">
         <section aria-labelledby="home-heading" className="home-opening relative isolate overflow-hidden">
           <Image
@@ -137,6 +127,6 @@ export default async function Home() {
           </div>
         </section>
       </main>
-    </PublicShell>
+    </EditorialShell>
   );
 }

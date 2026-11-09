@@ -32,16 +32,46 @@ body {
 }
 
 /* Homepage only: photograph-led opening and a native, keyboard-accessible strip. */
-.home-editorial {
+.editorial-surface {
   --font-serif: var(--font-editorial), Georgia, "Times New Roman", serif;
   font-family: var(--font-serif);
 }
 
-.home-editorial nav,
+.editorial-surface nav,
 .home-action,
 .home-label,
-.home-control {
+.home-control,
+.editorial-action,
+.editorial-label {
   font-family: "Courier New", Courier, monospace;
+}
+
+/* Auth presentation is scoped; the existing form, actions and CAPTCHA are intact. */
+.editorial-auth {
+  font-family: Arial, Helvetica, sans-serif;
+}
+
+.editorial-auth label,
+.editorial-auth button[type="submit"] {
+  font-family: "Courier New", Courier, monospace;
+  font-size: 0.875rem;
+  font-weight: 400;
+}
+
+.editorial-auth input {
+  border-radius: 0.125rem;
+  background-color: #fffdf9;
+  font-family: Arial, Helvetica, sans-serif;
+}
+
+.editorial-auth button[type="submit"] {
+  width: 100%;
+  border-radius: 0.125rem;
+}
+
+.editorial-faq summary::-webkit-details-marker,
+.editorial-contents summary::-webkit-details-marker {
+  display: none;
 }
 
 .home-opening-photo {

@@ -1,6 +1,7 @@
 import type { Metadata } from "next";
 import Link from "next/link";
-import { PublicShell } from "@/components/discovery/public-shell";
+import Image from "next/image";
+import { EditorialShell } from "@/components/brand/editorial-shell";
 export const metadata: Metadata = { title: "Frequently asked questions | Singgah", description: "A quick guide to finding local vendors and sharing your experience on Singgah." };
 const questions = [
   ["What is Singgah?", "Singgah helps you discover local Malaysian vendors, from food stalls and home businesses to independent makers. Each vendor has a public page with business information, products and community reviews."],
@@ -16,5 +17,29 @@ const questions = [
   ["Why is my neighbourhood missing?", "Location choices cover all Malaysian states and federal territories and the DOSM district reporting list. Neighbourhood coverage is still growing. Vendors can choose their city or district, leave the optional locality blank, and include the neighbourhood in their readable address."],
 ];
 export default function FAQPage() {
-  return <PublicShell><main id="main" className="mx-auto max-w-3xl px-5 py-12 sm:px-8"><p className="text-sm font-semibold text-[#86513a]">A little help along the way</p><h1 className="mt-3 font-serif text-4xl">Frequently asked questions</h1><p className="mt-4 leading-7 text-[#46534a]">Finding local places and sharing honest stories, made simple.</p><div className="mt-8 divide-y divide-hutan/15">{questions.map(([question, answer]) => <section key={question} className="py-6"><h2 className="text-lg font-semibold">{question}</h2><p className="mt-3 leading-7 text-[#46534a]">{answer}</p></section>)}</div><Link href="/discover" className="mt-6 inline-flex min-h-12 items-center rounded-xl bg-hutan px-5 text-white">Explore vendors</Link></main></PublicShell>;
+  return <EditorialShell><main id="main">
+    <section aria-labelledby="faq-heading" className="relative isolate overflow-hidden bg-hutan text-white">
+      <Image src="/images/editorial/heritage-street.webp" alt="Local shops and a cafe along a heritage street." fill sizes="100vw" preload className="-z-20 object-cover object-[50%_55%]" />
+      <div aria-hidden="true" className="pointer-events-none absolute inset-0 -z-10 bg-black/55 lg:bg-transparent lg:bg-linear-to-r lg:from-black/65 lg:via-black/55 lg:to-black/25" />
+      <div className="mx-auto flex min-h-[25rem] max-w-6xl items-end px-6 py-12 sm:min-h-[28rem] sm:px-8 sm:py-16">
+        <div className="max-w-xl">
+          <p className="editorial-label text-xs">A little help along the way</p>
+          <h1 id="faq-heading" className="mt-4 max-w-xl font-serif text-5xl leading-[1.05] sm:text-6xl">Frequently asked questions</h1>
+          <p className="mt-5 max-w-md text-xl leading-relaxed sm:text-2xl">Finding local places and sharing honest stories, made simple.</p>
+        </div>
+      </div>
+    </section>
+    <div className="mx-auto max-w-3xl px-6 py-12 sm:px-8 sm:py-16">
+      <div className="editorial-faq divide-y divide-hutan/20 border-y border-hutan/20">
+        {questions.map(([question, answer], index) => <details key={question} open={index === 0} className="group py-4 sm:py-5">
+          <summary className="flex min-h-11 cursor-pointer list-none items-center justify-between gap-6">
+            <h2 className="font-serif text-2xl leading-snug sm:text-3xl">{question}</h2>
+            <span aria-hidden="true" className="shrink-0 font-sans text-xl"><span className="group-open:hidden">+</span><span className="hidden group-open:inline">−</span></span>
+          </summary>
+          <p className="mt-4 max-w-prose pr-6 font-sans text-[15px] leading-8 text-[#46534a]">{answer}</p>
+        </details>)}
+      </div>
+      <Link href="/discover" className="editorial-action mt-10 inline-flex min-h-12 items-center rounded-sm bg-hutan px-6 text-sm text-white hover:bg-[#28513d]">Explore vendors</Link>
+    </div>
+  </main></EditorialShell>;
 }
