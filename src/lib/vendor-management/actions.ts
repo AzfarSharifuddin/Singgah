@@ -6,6 +6,7 @@ import { headers } from "next/headers";
 import { vendorClient, vendorSession, requireBusiness } from "@/lib/supabase/vendor";
 import { field, identifier, profileInput, productInput } from "./validation";
 import { uploadImage } from "./media-actions";
+import { isValidRegistrationPassword } from "./password";
 
 export type ActionResult = { message: string; ok?: boolean };
 const fail = (error: unknown): ActionResult => ({ message: error instanceof Error ? error.message : "Please try again." });
@@ -38,8 +39,8 @@ export async function register(
     return { message: "Enter a valid email address." };
   }
 
-  if (password.length < 12 || password.length > 128) {
-    return { message: "Use a password between 12 and 128 characters." };
+  if (!isValidRegistrationPassword(password)) {
+    return { message: "Use 12–128 characters with at least one uppercase letter, one number and one special character." };
   }
 
   if (!captchaToken || captchaToken.length > 2048) {

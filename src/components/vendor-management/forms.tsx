@@ -4,6 +4,7 @@ import { useActionState, useCallback, useEffect, useRef, useState } from "react"
 import type { ActionResult } from "@/lib/vendor-management/actions";
 import type { DiscoveryOptions } from "@/lib/vendors/discovery-params";
 import { Turnstile, type TurnstileInstance } from "@marsidev/react-turnstile";
+import { PASSWORD_MIN_LENGTH, PASSWORD_MAX_LENGTH, REGISTRATION_PASSWORD_PATTERN, passwordRequirements } from "@/lib/vendor-management/password";
 
 type Action = (state: ActionResult, form: FormData) => Promise<ActionResult>;
 const input = "mt-2 min-h-12 w-full rounded-xl border border-hutan/25 bg-white px-3 py-2 text-base";
@@ -19,14 +20,27 @@ export function AuthForm({ action, registration }: { action: Action; registratio
   const turnstileRef = useRef<TurnstileInstance | null>(null);
   const resetTurnstile = useCallback(() => turnstileRef.current?.reset(), []);
   const turnstileSiteKey = process.env.NEXT_PUBLIC_TURNSTILE_SITE_KEY;
+  const requirements = passwordRequirements(password);
+  const metCount = requirements.filter((requirement) => requirement.met).length;
 
   return <ActionForm action={action} label={registration ? "Create vendor account" : "Sign in"} onResult={resetTurnstile}>
     <label className="block">Email<input required type="email" name="email" value={email} onChange={(event) => setEmail(event.target.value)} maxLength={254} autoComplete="email" className={input} /></label>
-    <label className="block">Password<input required type="password" name="password" value={password} onChange={(event) => setPassword(event.target.value)} minLength={registration ? 12 : undefined} maxLength={128} autoComplete={registration ? "new-password" : "current-password"} className={input} /></label>
+    <label className="block">Password<input required type="password" name="password" value={password} onChange={(event) => setPassword(event.target.value)} minLength={registration ? PASSWORD_MIN_LENGTH : undefined} maxLength={PASSWORD_MAX_LENGTH} pattern={registration ? REGISTRATION_PASSWORD_PATTERN : undefined} aria-describedby={registration ? "vendor-password-requirements" : undefined} autoComplete={registration ? "new-password" : "current-password"} className={input} /></label>
+    {registration && <div>
+      <ul id="vendor-password-requirements" aria-label="Password requirements" className="space-y-2 text-sm leading-6">
+        {requirements.map((requirement) => <li key={requirement.id} data-requirement={requirement.id} data-met={requirement.met} className={`flex items-start gap-2 ${requirement.met ? "text-[#256447]" : "text-[#5d665f]"}`}>
+          <svg aria-hidden="true" focusable="false" width="18" height="18" viewBox="0 0 20 20" fill="none" stroke="currentColor" strokeWidth="1.7" strokeLinecap="round" strokeLinejoin="round" className="mt-1 shrink-0">
+            {requirement.met ? <path d="m4 10 4 4 8-9" /> : <circle cx="10" cy="10" r="6.5" />}
+          </svg>
+          <span><span className="sr-only">{requirement.met ? "Met: " : "Not met: "}</span>{requirement.label}</span>
+        </li>)}
+      </ul>
+      <p className="sr-only" aria-live="polite" aria-atomic="true">{metCount} of {requirements.length} password requirements met.</p>
+    </div>}
     {turnstileSiteKey
       ? <Turnstile ref={turnstileRef} siteKey={turnstileSiteKey} />
       : <p role="alert" className="rounded-xl bg-rembulan/40 p-4 text-sm">Turnstile is not configured. Add NEXT_PUBLIC_TURNSTILE_SITE_KEY to .env.local and restart the dev server.</p>}
-    {registration && <p className="text-sm text-[#5d665f]">Use at least 12 characters. We’ll email you to confirm your account.</p>}
+    {registration && <p className="text-sm text-[#5d665f]">We’ll email you to confirm your account.</p>}
   </ActionForm>;
 }
 export function ProfileForm({ options, initial = {}, action, onboarding = false }: { options: DiscoveryOptions; initial?: Record<string, string | null>; action: Action; onboarding?: boolean }) {

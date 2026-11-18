@@ -6,7 +6,8 @@ ownership and customer session boundaries remain as described below.
 
 ## Routes and flow
 
-- `/vendor/register`: email/password account creation, minimum 12-character password.
+- `/vendor/register`: email/password account creation; 12–128 characters including
+  at least one uppercase letter, one digit (0–9) and one special character.
 - `/vendor/login`: confirmed email/password sign-in and generic credential errors.
 - `/auth/callback`: exchanges the email confirmation PKCE code for a vendor session.
 - `/dashboard`: status, live published rating/count, product count and public link.
@@ -20,6 +21,27 @@ Registration creates only an Auth account. A confirmed account with no business
 is directed to onboarding. Saving onboarding creates a pending business and opens
 the optional branding step. Finish opens the overview. No multi-step framework,
 multi-business support, staff management or role hierarchy is introduced.
+
+Registration shares login's wallpaper layout, using the neighbourhood-shop photo
+behind an ivory form panel. A live checklist below the password turns green and
+shows a check for each satisfied requirement. Screen readers receive both the
+individual requirement state and a concise completion count. Native input
+constraints and the registration server action enforce the same shared policy;
+spaces and ordinary accented letters do not count as special characters. The
+128-character maximum remains. Existing passwords remain usable at sign-in;
+login, admin password flows, email confirmation and Turnstile are unchanged.
+Hosted Supabase Auth password-strength settings are configured separately from
+this application policy. No provider/dashboard settings are changed here.
+
+Run `node --test scripts/test-vendor-password.mjs` for policy, browser-pattern
+agreement and mocked server-action boundary checks. These tests create no users
+and send no emails.
+
+`node scripts/test-registration-browser.mjs` checks wallpaper geometry, all four
+checklist transitions, green checks, native form validation and unchanged sign-in
+requirements at 320, 375, 768 and 1280px. Set `PLAYWRIGHT_MODULE` and optional
+`TEST_BROWSER_CHANNEL`, `TEST_BASE_URL`, `SCREENSHOT_DIR` as for other browser
+checks. It does not submit the form, create users or interact with CAPTCHA.
 
 New businesses remain **pending**. A Singgah admin reviews the business and its
 private proof images before approval. The dashboard does not offer a public link

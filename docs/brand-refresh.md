@@ -89,16 +89,14 @@ part of this design implementation.
   retain their existing toggle. The exact state/reset/normalization logic,
   server query helpers, count, sorting and pagination URLs are unchanged.
   Result cards and input text retain Arial for small-text readability.
-- Registration and sign-in share `VendorAuthLayout`: the form is first on small
-  screens and beside a local photograph on desktop. Both use a full-width,
-  equal two-column split: the darkened photograph fills
-  the entire left panel from below the header, with no inset margin; the form
-  stays on the right. Mobile keeps the form first and the full-width photo below.
-  Registration keeps the neighbourhood-shop photo; sign-in uses the street-cart
-  photo from `Pictures/6.jpg`. Both reuse one layout without separate variants.
-  Styling is
-  scoped through `.editorial-auth`; `AuthForm`, `ActionForm`, server actions,
-  password rules, CAPTCHA instance/options and session behaviour are untouched.
+- Registration and sign-in share `VendorAuthLayout` and both opt into a wallpaper
+  layout behind a centered ivory form panel at every width. Registration uses the
+  neighbourhood-shop photo; sign-in uses the street-cart photo from `Pictures/6.jpg`.
+  Registration has a live password checklist for minimum length, uppercase,
+  number and special character. Its input and server action share the policy;
+  sign-in still accepts existing passwords. Styling is
+  scoped through `.editorial-auth`; `ActionForm`, existing sign-in rules,
+  CAPTCHA instance/options and session behaviour are unchanged.
 - FAQ uses native keyboard-accessible `details`/`summary` elements to reduce the
   initial text density. The first answer starts open. All 11 questions and answers
   are preserved verbatim. A full-width heritage street photo sits behind the
@@ -113,9 +111,10 @@ New derivatives in `public/images/editorial/`:
 | Source | Web asset | Width | WebP quality | Bytes | Use |
 | --- | --- | --- | --- | --- | --- |
 | `Pictures/9.jpg` | `market.webp` | 1600px | 75 | 122,118 | Discovery background |
-| `Pictures/8.jpg` | `neighbourhood-shop.webp` | 800px | 74 | 173,430 | Registration/sign-in |
+| `Pictures/8.jpg` | `neighbourhood-shop.webp` | 800px | 74 | 173,430 | Registration |
 | `Pictures/7.jpg` | `heritage-street.webp` | 1600px | 75 | 174,488 | FAQ background |
-| `Pictures/6.jpg` | `street-cart-portrait.webp` | 900 × 1200px | 74 | 165,258 | Sign-in panel |
+| `Pictures/6.jpg` | `street-cart-portrait.webp` | 900 × 1200px | 74 | 165,258 | Previous portrait derivative |
+| `Pictures/6.jpg` | `street-cart-wallpaper.webp` | 1600 × 1072px | 74 | 233,284 | Sign-in background |
 
 Originals are untouched, and no image is used as a fictitious business listing.
 The other new supplied photos remain available for later use. The source photos
@@ -127,6 +126,19 @@ solve CAPTCHA challenges. Missing local Turnstile configuration remains visible
 through the existing form warning; no keys or bypasses are added for styling.
 
 ## Verification
+
+### Login wallpaper
+
+The login page now uses the street-cart photograph as a full-width background
+behind a centered ivory form panel on mobile and desktop. The photograph fills
+the main section as its content grows, with a dark readability tint; it no longer
+appears as a separate panel below the form. Registration uses the same wallpaper
+presentation with its own neighbourhood-shop photo. The shared auth layout exposes
+an opt-in `wallpaper` presentation flag.
+`street-cart-wallpaper.webp` is a 1600px-wide WebP derivative of `Pictures/6.jpg`;
+Next Image serves responsive sizes. Registration alone adds the live password
+requirements described above; CAPTCHA configuration and session handling remain
+unchanged.
 
 ### Customer review page
 
