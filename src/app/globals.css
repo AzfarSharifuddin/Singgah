@@ -74,6 +74,10 @@ body {
   display: none;
 }
 
+.review-products summary::-webkit-details-marker {
+  display: none;
+}
+
 .home-opening-photo {
   object-position: 58% center;
 }

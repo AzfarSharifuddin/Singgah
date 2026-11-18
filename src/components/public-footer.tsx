@@ -1,7 +1,10 @@
 import Link from "next/link";
 import { BrandDivider } from "@/components/brand/brand-accents";
 
-export function PublicFooter({ quiet = false }: { quiet?: boolean }) {
+export function PublicFooter({ quiet = false, compact = false }: { quiet?: boolean; compact?: boolean }) {
+  if (compact) return <footer className="mx-5 border-t border-hutan/15 py-4 text-center text-hutan sm:mx-8">
+    <span className="font-sans text-sm font-bold tracking-[0.16em]">SINGGAH<span aria-hidden="true" className="text-terracotta">.</span></span>
+  </footer>;
   if (quiet) return <footer className="mx-6 border-t border-hutan/20 py-8 text-hutan sm:mx-8">
     <div className="mx-auto flex max-w-6xl flex-col gap-4 sm:flex-row sm:items-center sm:justify-between">
       <Link href="/" aria-label="Singgah home" className="inline-flex min-h-11 items-center self-start font-sans text-sm font-bold tracking-[0.16em]">SINGGAH<span aria-hidden="true" className="text-terracotta">.</span></Link>

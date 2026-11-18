@@ -1,6 +1,6 @@
 import assert from "node:assert/strict";
 import { test } from "node:test";
-import { parseReview } from "../src/lib/reviews/validation.ts";
+import { parseReview, REVIEWER_NAME_LIMIT } from "../src/lib/reviews/validation.ts";
 import { sameOrigin } from "../src/lib/reviews/origin.ts";
 const vendorId = "00000006-0000-4000-8000-000000000001";
 const productId = "00000007-0000-4000-8000-000000000001";
@@ -22,6 +22,13 @@ test("review-only, whitespace and optional product ratings", () => {
 test("reviewer name is required and accepts letters and spaces only", () => {
   for (const name of [undefined, "", "A", "Aisyah99", "Nur_Aisyah", "Nur.Aisyah", "Nur\nAisyah", "🙂"]) assert.throws(() => parseReview({ ...base, name }), /letters and spaces|Enter your name/);
   assert.equal(parseReview({ ...base, name: "Élodie Anak Aisyah" }).name, "Élodie Anak Aisyah");
+});
+
+test("new review names accept 20 characters and reject 21 at the shared API boundary", () => {
+  assert.equal(REVIEWER_NAME_LIMIT, 20);
+  assert.equal(parseReview({ ...base, name: "A".repeat(20) }).name.length, 20);
+  assert.equal(parseReview({ ...base, name: `  ${"A".repeat(20)}  ` }).name.length, 20);
+  assert.throws(() => parseReview({ ...base, name: "A".repeat(21) }), /2–20 letters and spaces/);
 });
 test("reject invalid ratings, text, spoofed fields and product comments", () => {
   for (const rating of [0, 6, 2.5, "5", null]) assert.throws(() => parseReview({ ...base, rating }));

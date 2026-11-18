@@ -128,6 +128,46 @@ through the existing form warning; no keys or bypasses are added for styling.
 
 ## Verification
 
+### Customer review page
+
+The approved Cover & form layout reuses the vendor's public cover and logo in a
+compact, darkened banner above one narrow ivory form. The rating is first,
+optional product ratings start collapsed, and native radio/checkbox controls
+retain keyboard and touch support. New reviewer names are limited to 20
+characters in the input and shared API validator. Security logic and existing
+review publication, duplicate checks and terms-version rules are unchanged.
+
+`node scripts/test-review-editorial-browser.mjs` exercises the real hosted vendor
+page at mobile/tablet/desktop widths, the name limit, keyboard stars, product
+selection/removal, terms-return draft recovery and missing-vendor 404. It creates
+no identities or reviews and does not automate CAPTCHA challenges.
+
+### Public vendor profile layout
+
+The vendor profile now uses the same local EB Garamond headings, text wordmark,
+editorial shell and quiet footer as discovery and the homepage. The vendor's own
+cover photograph sits inside a contained, rounded business card aligned with the
+page content, with an overlapping rounded-square logo. The cover is 176px tall
+on phones and 260px from 640px. Identity, rating and contact links sit below it;
+the review action sits to the right on larger screens and fills the mobile row.
+Instagram, TikTok, Facebook and WhatsApp use small locally served brand glyphs;
+calling uses a handset icon. All icon links retain accessible names. Only
+populated, safely formatted links appear.
+
+About, products, optional gallery, reviews and location use full-width sections.
+Products have ivory cards on a lighter cream background, edge-to-edge 4:3 images,
+two-line expandable description previews, and aligned price/rating footers.
+The grid has one column on phones, two from 640px, and three from 1024px.
+All active products remain available. Empty galleries and their jump link are
+omitted; other missing-data fallbacks remain. Reviews retain database-derived
+ratings, newest/highest/lowest sorting and server pagination. No Supabase schema,
+public visibility, review submission, authentication or Turnstile changes apply.
+
+`node scripts/test-vendor-editorial-browser.mjs` checks the current real public
+vendor at 320, 375, 768, 1024 and 1280px, including product geometry, aligned
+prices, local social logos, editorial typography and section links. It performs
+no writes or account creation.
+
 - `node scripts/test-home-browser.mjs`: read-only real-data checks at 375, 768
   and 1280px; six sections, actual loaded local font, unchanged wordmark,
   responsive images, hero alignment, category keyboard access, destination

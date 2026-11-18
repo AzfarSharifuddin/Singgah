@@ -11,6 +11,6 @@ const editorialFont = localFont({
   fallback: ["Georgia", "Times New Roman", "serif"],
 });
 
-export function EditorialShell({ children }: { children: ReactNode }) {
-  return <PublicShell editorial className={editorialFont.variable}>{children}</PublicShell>;
+export function EditorialShell({ children, focused = false }: { children: ReactNode; focused?: boolean }) {
+  return <PublicShell editorial focused={focused} className={editorialFont.variable}>{children}</PublicShell>;
 }

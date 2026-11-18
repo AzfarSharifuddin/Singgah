@@ -36,9 +36,11 @@ async function getProducts(client: ReturnType<typeof createServerSupabaseClient>
   return products.data.map((product) => ({ ...product, summary: summaries.get(product.id) ?? null }));
 }
 
-async function getImages(client: ReturnType<typeof createServerSupabaseClient>, vendorId: string) {
-  const images = await client.from("vendor_images").select("id,product_id,storage_path,image_type,alt_text")
-    .eq("vendor_id", vendorId).eq("is_public", true).order("display_order").order("id");
+async function getImages(client: ReturnType<typeof createServerSupabaseClient>, vendorId: string, types?: ("cover" | "logo")[]) {
+  let query = client.from("vendor_images").select("id,product_id,storage_path,image_type,alt_text")
+    .eq("vendor_id", vendorId).eq("is_public", true);
+  if (types) query = query.in("image_type", types);
+  const images = await query.order("display_order").order("id");
   if (images.error) throw new Error("Unable to load vendor details.");
   // No cross-request cache: every signing request must still pass public media
   // RLS. Product ratings and reviews need not finish before signing can start.
@@ -48,6 +50,12 @@ async function getImages(client: ReturnType<typeof createServerSupabaseClient>, 
     : null;
   const urls = new Map(signed?.data?.map((image) => [image.path, image.signedUrl]) ?? []);
   return images.data.map((image) => ({ ...image, url: urls.get(image.storage_path) ?? null }));
+}
+
+// Review pages need business identity only, without loading gallery, product
+// photos, reviews or rating aggregates. Reuse the same public signing rules.
+export function getVendorIdentityImages(vendorId: string) {
+  return getImages(createServerSupabaseClient(), vendorId, ["cover", "logo"]);
 }
 
 export async function getProfileContent(vendorId: string, reviewPage: number, sort: "newest" | "highest" | "lowest" = "newest") {

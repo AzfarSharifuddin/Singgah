@@ -71,7 +71,7 @@ try {
     await page.getByRole("heading", { name: vendor.name, exact: true }).waitFor();
     await page.waitForLoadState("networkidle");
     const summary = (await read(client.from("vendor_rating_summaries").select("review_count,average_rating").eq("vendor_id", vendor.id).single())).data;
-    assert.ok((await page.locator("#reviews").textContent()).includes(`${summary.review_count} published`));
+    assert.ok((await page.locator("#reviews").textContent()).includes(`${summary.review_count} ${summary.review_count === 1 ? "review" : "reviews"}`));
     const products = (await read(client.from("products").select("id,name").eq("vendor_id", vendor.id).eq("is_active", true))).data;
     assert.equal(await page.locator("#products article").count(), products.length);
     for (const product of products) assert.ok((await page.locator("#products").textContent()).includes(product.name));
@@ -96,15 +96,15 @@ try {
       const descriptionId = await expand.getAttribute("aria-controls");
       const description = page.locator(`[id="${descriptionId}"]`);
       const collapsedHeight = (await description.boundingBox()).height;
-      assert.ok(collapsedHeight <= 73, "description preview is at most three lines");
+      assert.ok(collapsedHeight <= 49, "description preview is at most two lines");
       await expand.focus(); await expand.press("Enter");
-      await page.waitForFunction((id) => document.getElementById(id).clientHeight > 73, descriptionId);
+      await page.waitForFunction((id) => document.getElementById(id).clientHeight > 49, descriptionId);
       assert.ok((await description.boundingBox()).height > collapsedHeight);
       await assertCardAlignment();
       const collapse = page.getByRole("button", { name: /^Show less about / }).first();
       assert.equal(await collapse.getAttribute("aria-expanded"), "true");
       await collapse.press("Space");
-      await page.waitForFunction((id) => document.getElementById(id).clientHeight <= 73, descriptionId);
+      await page.waitForFunction((id) => document.getElementById(id).clientHeight <= 49, descriptionId);
       await assertCardAlignment();
     }
     const images = page.locator("main img");

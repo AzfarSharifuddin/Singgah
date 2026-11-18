@@ -4,10 +4,24 @@
 
 `/vendor/[slug]/review` loads an active published vendor and its active products
 using public RLS. Missing/inactive/unpublished vendors return 404. The profile CTA
-now links here. The form requires a public reviewer name of 2–80 letters and spaces,
+now links here. The form requires a public reviewer name of 2–20 letters and spaces,
 uses native keyboard-accessible radio inputs, optional text (1,000 characters),
 and optional star-only product ratings. Customer ID, publication state, and
 verification state are not accepted from the form.
+
+The review page uses the shared editorial font and a contained business-cover
+banner with the vendor's real logo and location. Cover and logo signing reuses
+the public profile's media rules and requests only those two image types.
+Overall rating comes first. Product ratings are in a collapsed optional section:
+select an item, choose its stars, or uncheck/remove it to skip. The name input,
+draft restoration and shared server/API validator all use the 20-character limit.
+Returning from Terms keeps the existing short-lived draft and deliberately leaves
+consent unchecked. The Turnstile widget, callbacks and submission flow are unchanged.
+
+Review pages use the focused editorial shell: a non-linked wordmark, no header
+navigation and a compact wordmark-only footer. The explicit business-return link
+and the draft-preserving terms link remain in the form. Other public pages keep
+their normal navigation and footer links.
 
 The singleton browser Supabase client persists its session in browser storage and
 refreshes it. Merely browsing a vendor or opening the form creates no identity.
@@ -94,6 +108,12 @@ submission to include a public name of 2–80 letters and spaces. The rule is
 validated again inside the signed database RPC. Historical rows with a null name
 remain unchanged and are labelled as having no recorded name instead of being
 given a fabricated identity.
+
+New application/API submissions now use the stricter 20-character name limit
+before a signed permit is issued. The database's historical 80-character capacity
+and applied migrations remain unchanged, preserving older names. Direct public
+writes remain denied and the RPC still requires a valid server-signed permit;
+this presentation/input change needs no database migration.
 
 A per-customer transaction advisory lock serializes duplicate and rate checks.
 At most five reviews can be submitted per customer in a rolling hour, across

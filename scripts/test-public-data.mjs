@@ -194,6 +194,20 @@ test("profile image signing and product ratings start without waiting for review
   assert.deepEqual(steps.at(-1), ["range", 10, 19]);
 });
 
+test("review identity images query only public cover/logo metadata and reuse one signing batch", async () => {
+  const path = "vendors/v/cover/photo.webp";
+  const f = fixture({ vendor_images: ok([{ id: "cover", storage_path: path, image_type: "cover" }]) }, ok([{ path, signedUrl: "https://example.invalid/signed" }]));
+  const { getVendorIdentityImages } = load("../src/lib/vendors/profile.ts", f.modules);
+  const images = await getVendorIdentityImages("v");
+  assert.equal(images[0].url, "https://example.invalid/signed");
+  assert.equal(f.calls.length, 2, "one metadata read and one signing batch; no reviews or product ratings");
+  const steps = querySteps(f, "vendor_images");
+  assert.ok(steps.some(([method, key, value]) => method === "eq" && key === "vendor_id" && value === "v"));
+  assert.ok(steps.some(([method, key, value]) => method === "eq" && key === "is_public" && value === true));
+  assert.deepEqual(steps.find(([method]) => method === "in"), ["in", "image_type", ["cover", "logo"]]);
+  assert.deepEqual([...f.calls.find((call) => call.table === "sign").paths], [path]);
+});
+
 test("empty profiles skip ratings/signing; repeated reads get fresh reviews and summaries", async () => {
   let count = 0;
   const f = fixture({ products: ok([]), vendor_images: ok([]), vendor_rating_summaries: () => ok({ review_count: ++count }), reviews: ok([]) });

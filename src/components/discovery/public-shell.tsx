@@ -1,7 +1,8 @@
 import { PublicFooter } from "@/components/public-footer";
 import Link from "next/link";
 
-export function PublicShell({ children, editorial = false, className = "" }: { children: React.ReactNode; editorial?: boolean; className?: string }) {
+export function PublicShell({ children, editorial = false, focused = false, className = "" }: { children: React.ReactNode; editorial?: boolean; focused?: boolean; className?: string }) {
+  const wordmark = <>SINGGAH<span aria-hidden="true" className="text-terracotta">.</span></>;
   return (
     <div className={`min-h-svh bg-[#faf8f3] text-hutan [overflow-wrap:anywhere] ${editorial ? "editorial-surface" : ""} ${className}`}>
       <a
@@ -13,18 +14,15 @@ export function PublicShell({ children, editorial = false, className = "" }: { c
 
       <header className="border-b border-hutan/10">
         <div className={editorial ? "mx-auto flex max-w-7xl items-center justify-between gap-3 px-6 py-3 sm:px-8 sm:py-5" : "mx-auto flex max-w-6xl flex-col gap-3 px-5 py-4 sm:flex-row sm:items-center sm:justify-between sm:px-8"}>
-          <Link
+          {focused ? <span className="inline-flex min-h-11 items-center font-sans text-xl font-bold tracking-[0.16em]">{wordmark}</span> : <Link
             href="/"
             aria-label="Singgah home"
             className="inline-flex min-h-11 items-center font-sans text-xl font-bold tracking-[0.16em]"
           >
-            SINGGAH
-            <span aria-hidden="true" className="text-terracotta">
-              .
-            </span>
-          </Link>
+            {wordmark}
+          </Link>}
 
-          <nav
+          {!focused && <nav
             aria-label="Main navigation"
             className={editorial ? "flex flex-wrap items-center gap-4" : "flex flex-wrap items-center gap-2"}
           >
@@ -41,13 +39,13 @@ export function PublicShell({ children, editorial = false, className = "" }: { c
             >
               For vendors
             </Link>
-          </nav>
+          </nav>}
         </div>
       </header>
 
       {children}
 
-      <PublicFooter quiet={editorial} />
+      <PublicFooter quiet={editorial} compact={focused} />
     </div>
   );
 }

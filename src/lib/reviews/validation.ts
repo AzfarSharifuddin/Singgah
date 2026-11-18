@@ -1,5 +1,5 @@
 export const REVIEW_TEXT_LIMIT = 1000;
-export const REVIEWER_NAME_LIMIT = 80;
+export const REVIEWER_NAME_LIMIT = 20;
 export type ReviewInput = { vendorId: string; name: string; termsAccepted: true; rating: number; text: string | null; products: { productId: string; rating: number }[] };
 const uuid = /^[0-9a-f]{8}-[0-9a-f]{4}-[0-9a-f]{4}-[0-9a-f]{4}-[0-9a-f]{12}$/i;
 const personName = /^\p{L}+(?: +\p{L}+)*$/u;
@@ -12,7 +12,7 @@ export function parseReview(input: unknown): ReviewInput {
   if (typeof data.vendorId !== "string" || !uuid.test(data.vendorId)) throw new Error("This vendor is unavailable.");
   if (typeof data.name !== "string") throw new Error("Enter your name.");
   const name = data.name.trim().replace(/ +/g, " ");
-  if (name.length < 2 || name.length > REVIEWER_NAME_LIMIT || !personName.test(name)) throw new Error("Use 2–80 letters and spaces only for your name.");
+  if (name.length < 2 || name.length > REVIEWER_NAME_LIMIT || !personName.test(name)) throw new Error(`Use 2–${REVIEWER_NAME_LIMIT} letters and spaces only for your name.`);
   if (!stars(data.rating)) throw new Error("Choose an overall rating from 1 to 5 stars.");
   if (data.text !== null && data.text !== undefined && typeof data.text !== "string") throw new Error("Please check your written experience.");
   const text = typeof data.text === "string" ? data.text.trim() || null : null;
