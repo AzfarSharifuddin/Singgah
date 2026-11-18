@@ -9,8 +9,8 @@ const defaultPhoto = {
 
 export function VendorAuthLayout({ title, description, children, photo = defaultPhoto, wallpaper = false }: { title: string; description: string; children: ReactNode; photo?: { src: string; alt: string }; wallpaper?: boolean }) {
   const content = <>
-    <h1 className="font-serif text-5xl leading-[1.05] sm:text-6xl">{title}</h1>
-    <p className="mb-8 mt-5 text-xl leading-relaxed sm:text-2xl">{description}</p>
+    <h1 className="font-serif text-4xl leading-[1.1] sm:text-[2.75rem]">{title}</h1>
+    <p className="mb-6 mt-3 text-base leading-7 sm:text-lg">{description}</p>
     {children}
   </>;
 

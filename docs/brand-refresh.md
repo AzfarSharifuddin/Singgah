@@ -140,6 +140,11 @@ Next Image serves responsive sizes. Registration alone adds the live password
 requirements described above; CAPTCHA configuration and session handling remain
 unchanged.
 
+Both auth pages use a compact form type scale: 36px headings on phones and 44px
+from 640px, with 16–18px introductory text. Existing font families, 16px editable
+fields and touch targets remain. The introduction has less surrounding space so
+the fields and password checklist keep their visual priority.
+
 ### Customer review page
 
 The approved Cover & form layout reuses the vendor's public cover and logo in a
